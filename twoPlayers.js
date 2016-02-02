@@ -1,4 +1,9 @@
-var game = new Phaser.Game(1000, 800, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update, render: render });
+var game = new Phaser.Game(1000, 800, Phaser.CANVAS, 'phaser-example', 
+  { preload: preload,
+    create: create,
+    update: update,
+    render: render
+  });
 
 var trampDude = {
   difficulty: 1,
@@ -142,13 +147,16 @@ var trampDude = {
 
 }
 
+
 function preload() {
     game.load.image('paddle', './imgs/trampoline.png');
     game.load.image('background', './imgs/the_sky2.png');
     game.load.spritesheet('dudeFlip', './imgs/trampDude/dudeFlip.png', 54, 68)
+    game.load.spritesheet('alien', './imgs/oldsprite.png', 15.83, 24);
+    // random rain from clouds
     //game.load.spritesheet('bullets', './imgs/rain.png', 14, 13);
-    //game.load.spritesheet('dude', './imgs/trampDude/sballerLkoLeft_strip9.png', 15.83, 24);
 }
+
 
 // Global Variables
 var player1;
@@ -169,18 +177,22 @@ var flip2Text;
 var userMessage;
 var currentAngle;
 
+// Create all our Stuff
 function create() {
     //Background Spirit - Has No Gravity
     bg = game.add.sprite(0, 0, 'background');
     // Text to Create
-    var style = { font: "32px Arial",fill:'#ffffff', align:'left'};
-    var highlighted = { font: '32px Arial',fill:'#ffff00', align:'left'}
-    var green = { font: "32px Arial",fill:'rgb(91, 230, 84)', align:'left'};
-    var orange = { font: "32px Arial",fill:'rgb(240, 98, 46)', align:'left'};
-    var purple = { font: "32px Arial",fill:'rgb(222, 222, 222)', align:'left'};
+    var style = { font: "32px Arial",fill:'#ffffff',stroke:'#000000', strokeThickness:5, align:'left'};
+    var highlighted = { font: '32px Arial',fill:'#ffff00',stroke:'#000000', strokeThickness:5, align:'left'}
+    var green = { font: "32px Arial",fill:'rgb(91, 230, 84)',stroke:'#000000', strokeThickness:4, align:'left'};
+    var orange = { font: "32px Arial",fill:'rgb(240, 98, 46)',stroke:'#000000', strokeThickness:4, align:'left'};
+    var purple = { font: "32px Arial",fill:'rgb(222, 222, 222)', stroke:'#000000', strokeThickness:6, align:'left'};
 
     scoreText = game.add.text(4,15, "Score: " + String(trampDude.score), green)
     livesText = game.add.text(4,55, "Lives: " + String(trampDude.lives), orange)
+
+    shield = game.add.sprite(360, 720, 'paddle');
+    player2 = game.add.sprite(450, 720, 'alien')
 
     flipText = game.add.text(4,95, "Next Flips:",purple)
     flip1Text = game.add.text(4,135, String(trampDude.flipsNeeded[0]) ,highlighted)
@@ -192,20 +204,21 @@ function create() {
 
     game.time.desiredFps = 30;
 
-    game.physics.arcade.gravity.y = 250;
+    game.physics.arcade.gravity.y = 270;
 
     // Shield Parameters
-    shield = game.add.sprite(400, 740, 'paddle');
     player1 = game.add.sprite(400, 640, 'dudeFlip');
     //game.time.events.loop(150, fire, this);
 
     game.physics.enable(player1, Phaser.Physics.ARCADE);
     game.physics.enable(shield, Phaser.Physics.ARCADE);
+    game.physics.enable(player2, Phaser.Physics.ARCADE)
 
     //player1 collision
     player1.body.bounce.y = 0.2;
     player1.body.collideWorldBounds = true;
     shield.body.collideWorldBounds = true;
+    player2.body.collideWorldBounds = true;
     player1.body.setSize(18, 40, 4, 1);
     //shield collision
 
@@ -215,9 +228,9 @@ function create() {
     player1.animations.add('right', [0], true)
 
     // PLAYER TWO ANIMATIONS
-    // player1.animations.add('left', [1, 2, 3, 4], 10, true);
-    // player1.animations.add('turn', [5], 10, true);
-    // player1.animations.add('right', [6, 7, 8, 9, 10], 10, true);
+    player2.animations.add('left', [1, 2, 3, 4], 10, true);
+    player2.animations.add('idle', [5], true);
+    player2.animations.add('right', [6, 7, 8, 9, 10], 10, true);
 
     // player11 Key Events
     cursors = game.input.keyboard.createCursorKeys();
@@ -229,12 +242,13 @@ function create() {
     wButton = game.input.keyboard.addKey(Phaser.Keyboard.W)
     aButton = game.input.keyboard.addKey(Phaser.Keyboard.A)
     dButton = game.input.keyboard.addKey(Phaser.Keyboard.D)
-    pauseButton = game.input.keyboard.addKey(Phaser.Keyboard.P)
+    //pauseButton = game.input.keyboard.addKey(Phaser.Keyboard.P)
     // Physics Enabled
     game.physics.arcade.enable(game.world, true);
 
     //shield.body.allowGravity = 0;
     shield.body.immovable = true
+    player2.body.immovable = true
 
     //Parameters for Player 1 Rotation
     player1.body.maxAngular = 400;
@@ -246,6 +260,7 @@ function create() {
 }
 
 //Core Game Logic Gets Looped Here
+
 function update() {
     // GENERATE ROTATION ARRAY
     currentAngle = trampDude.getRotation();
@@ -261,11 +276,11 @@ function update() {
     //Bounce Collision Logic Start
     game.physics.arcade.collide(shield, player1, null, reflect, this);
     shield.body.velocity.x = 0
+    player2.body.velocity.x = 0;
 
     // Logic to Rotate the shield on button click
 
     // Shield speed and player1s speed!!!!!!!!!!!!!
-    //player1.body.velocity.x = 0;
 
     //Logic for player1 - Our Main Dude!::
     if(cursors.left.isDown){
@@ -283,20 +298,23 @@ function update() {
 
     //Logic for trampoline player 2
     if (aButton.isDown){
-
-        shield.body.velocity.x = -150;
-
+        shield.body.velocity.x = -170;
+        player2.body.velocity.x = -170;
+        player2.animations.play('left')
         if (facing != 'left'){
             facing = 'left';
         }
     }
     else if (dButton.isDown) {
         //player1.body.velocity.x = 50;
-        shield.body.velocity.x = 150;
+        shield.body.velocity.x = 170;
+        player2.body.velocity.x = 170;
+        player2.animations.play('right')
         if (facing != 'right') {
             facing = 'right';
         }
     }
+    else{ player2.animations.play('idle')}
     //Keybindings to Adjust the angle of the shield
     if(tiltRightButton.isDown){
       shield.angle = 10;
@@ -320,12 +338,15 @@ function update() {
     if ((jumpButton.isDown || wButton.isDown)&& shield.body.onFloor() && game.time.now > jumpTimer){
         shield.body.velocity.y = -150;
         jumpTimer = game.time.now + 750;
+        player2.body.velocity.y = -150
+        player2.animations.play('idle')
     }
     // Check if player1 Is Dead
     checkBounds(player1)
 }
 
 // Function to fire particles
+// FOR RAIN ADDITION
 /*
 function fire(){
   //var ball = balls.getFirstExists(false);
@@ -339,6 +360,7 @@ function fire(){
 }
 */
 
+
 // Function to reflect trampDude!****
 function reflect(a, player1){
     if(player1.y > (shield.y +15)){
@@ -351,18 +373,23 @@ function reflect(a, player1){
       //player1.body.velocity.y = -180;
       // ADD EXTRA VELOCITY HERE IF PLAYER LANDS WELL
       // Check list and all that stuff here
-      player1.body.velocity.x = shield.body.velocity.x * 1.7 ;
+      player1.body.velocity.x = shield.body.velocity.x * 1.5 ;
       return false;
     }
 }
 
+
 // function to kill the player1 if they hit the ground
 function checkBounds(player1){
+
   if(player1.body.y > 759){
     player1.kill();
   }
 }
 
+
+
+// Render debuggin info
 function render () {
 
     // DEBUGGING INFORMATION

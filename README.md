@@ -13,8 +13,8 @@ This is my attempt at learning phaser. My goal is to make a version of one of my
 - Download the zip 
 - Navigate to the Project Directory in your terminal 
 - Phaser requires a server to work locally
-- start the server from inside the termal and navigate to the portin your browser
-- I use python: **python -m SimpleHTTPServer **.
+- start the server from inside the termal and navigate to the port in your browser
+- I use python: ** python -m SimpleHTTPServer **.
 
 ## Libraries
 
