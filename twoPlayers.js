@@ -174,7 +174,35 @@ var trampDude = {
     }
   },
   generateBat: function(){
-
+    if(Math.round(Math.random()) == 1 && bat.alive !== true){
+      bat.alive = true;
+      bat.exists = true;
+      bat.visible = true;
+      bat.body.allowGravity = false;
+      bat.body.velocity.y = 0;
+      var yArray = [200, 250, 300, 350, 400, 450, 500, 550]
+      var speeds = [190, 210, 230, 260, 280, 300, 325, 400, 450, 500, 540, 580, 600, 640, 700, 725, 745, 800, 825]
+      var batSpeed = speeds[Math.round(Math.random()* speeds.length-1)]
+      var selectedY = yArray[Math.round(Math.random() * yArray.length-1)]
+      bat.body.collideWorldBounds = false;
+      var directions = ['left', 'right']
+      var direction = directions[Math.round(Math.random())]
+      console.log(batSpeed)
+      if(direction = 'left'){
+        bat.body.velocity.x = batSpeed
+        bat.body.y = selectedY
+        bat.body.x = 830;
+        batRight = false;
+        batLeft = true;
+      }
+      else{
+        bat.body.velocity.x = batSpeed
+        bat.body.y = selectedY;
+        bat.body.x = -20;
+        batLeft = false;
+        batRight = true;
+      }
+    }
   },
   collectBat: function(){
     bat.kill()
@@ -335,8 +363,6 @@ function update() {
     shield.body.velocity.x = 0
     player2.body.velocity.x = 0;
 
-    // Logic to Rotate the shield on button click
-
     // Shield speed and player1s speed!!!!!!!!!!!!!
 
     //Logic for player1 - Our Main Dude!::
@@ -392,6 +418,11 @@ function update() {
       bat.animations.play('right')
       bat.body.velocity.x = 40;
     }
+
+    //Check if Bat is out of Bounds
+    if(bat.body.x > 900 || bat.body.x < -12){
+      bat.kill()
+    }
 }
 
 // Function to fire particles
@@ -423,6 +454,7 @@ function reflect(a, player1){
       // ADD EXTRA VELOCITY HERE IF PLAYER LANDS WELL
       // Check list and all that stuff here
       player1.body.velocity.x = shield.body.velocity.x * 1.5 ;
+      trampDude.generateBat()
       return false;
     }
 }
