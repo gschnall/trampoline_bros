@@ -6,14 +6,16 @@ var game = new Phaser.Game(950, 800, Phaser.CANVAS, 'phaser-example',
     render: render
   });
 */
-
 //---- Global Variables
 var batDead = false;
 var batLeft = false;
-var batRight = true;
+var batRight = false;
+var ratDead = false;
+var ratLeft = false;
+var ratRight = true;
 var facing = 'left';
 var jumpTimer = 0;
-var bat, player1, player2,
+var bat, rat, player1, player2,
 cursors,jumpButton,bg,
 balls, shield, scoreText,
 livesText, flipText, flip2Text,
@@ -190,7 +192,8 @@ var trampDude = {
     }
   },
   generateBat: function(){
-    if(Math.round(Math.random()) == 1 && bat.alive !== true){
+    if(Math.floor(Math.random()+1) && bat.alive !== true){
+      console.log('working')
       bat.alive = true;
       bat.exists = true;
       bat.visible = true;
@@ -200,22 +203,21 @@ var trampDude = {
       var speeds = [190, 210, 230, 260, 280, 300, 325, 400, 500, 540, 580, 600, 640, 700, 725, 745, 800, 825]
       var batSpeed = speeds[Math.floor(Math.random()* speeds.length)]
       var selectedY = yArray[Math.floor(Math.random() * yArray.length)]
-      console.log(selectedY)
       bat.body.collideWorldBounds = false;
       var directions = ['left', 'right']
       var direction = directions[Math.round(Math.random())]
-      console.log(batSpeed)
-      if(direction = 'left'){
-        bat.body.velocity.x = batSpeed
+      console.log(direction)
+      if(direction == 'left'){
+        bat.body.velocity.x = 40
         bat.body.y = selectedY
-        bat.body.x = 830;
+        bat.body.x = 810;
         batRight = false;
         batLeft = true;
       }
       else{
-        bat.body.velocity.x = batSpeed
+        bat.body.velocity.x = -40
         bat.body.y = selectedY;
-        bat.body.x = -20;
+        bat.body.x = -10;
         batLeft = false;
         batRight = true;
       }
@@ -232,18 +234,16 @@ var trampDude = {
 
 }
 
-
 var preload = function(){
     game.load.image('paddle', './imgs/trampoline.png');
     game.load.image('background', './imgs/the_sky2.png');
     game.load.spritesheet('dudeFlip', './imgs/trampDude/dudeFlip.png', 54, 68)
     game.load.spritesheet('alien', './imgs/oldsprite.png', 15.83, 24);
     game.load.spritesheet('bats', './imgs/bats.png', 32, 36);
+    game.load.spritesheet('rats', './imgs/rats.png', 32, 22);
     // random rain from clouds
     //game.load.spritesheet('bullets', './imgs/rain.png', 14, 13);
 }
-
-
 
 // Create all our Stuff
 var create = function() {
@@ -278,19 +278,23 @@ var create = function() {
     // Shield Parameters
     player1 = game.add.sprite(400, 640, 'dudeFlip');
     //BAT STARTS HIDDEN
-    bat = game.add.sprite(-32,400,'bats');
+    bat = game.add.sprite(-35,400,'bats');
+    //RAT STARTS HIDDEN
+    rat = game.add.sprite(-10, 780, 'rats');
     //game.time.events.loop(150, fire, this);
 
     game.physics.enable(player1, Phaser.Physics.ARCADE);
     game.physics.enable(shield, Phaser.Physics.ARCADE);
     game.physics.enable(player2, Phaser.Physics.ARCADE)
     game.physics.enable(bat, Phaser.Physics.ARCADE)
+    game.physics.enable(rat, Phaser.Physics.ARCADE)
 
     //player1 collision
     player1.body.bounce.y = 0.2;
     player1.body.collideWorldBounds = true;
     shield.body.collideWorldBounds = true;
     player2.body.collideWorldBounds = true;
+
     player1.body.setSize(18, 40, 4, 1);
     //shield collision
 
@@ -305,9 +309,13 @@ var create = function() {
     player2.animations.add('right', [6, 7, 8, 9, 10], 10, true);
 
     // Bat Enemy Animations
-     bat.animations.add('right', [1,2,3],10, true);
-     bat.animations.add('left', [6,5,4],10, true);
-     bat.animations.add('dead', [2], true);
+    bat.animations.add('right', [1,2,3],10, true);
+    bat.animations.add('left', [6,5,4],10, true);
+    bat.animations.add('dead', [2], true);
+
+     // Rat Enemy Animations
+     rat.animations.add('right', [0,1,2,3,4], 10, true)
+     rat.animations.add('left', [5,6,7,8,9], 10, true)
 
     // player11 Key Events
     cursors = game.input.keyboard.createCursorKeys();
@@ -325,7 +333,7 @@ var create = function() {
 
     //shield.body.allowGravity = 0;
     //shield.body.immovable = true
-    player2.body.immovable = true
+    //player2.body.immovable = true
 
     //Parameters for Player 1 Rotation
     player1.body.maxAngular = 400;
@@ -335,6 +343,7 @@ var create = function() {
     // No Gravity for the bg Image
     bg.body.allowGravity = false;
     bat.body.allowGravity = false;
+    rat.body.allowGravity = false;
 }
 
 //Core Game Logic Gets Looped Here
@@ -353,12 +362,15 @@ var update = function() {
     player1.body.collideWorldBounds = true;
     player1.body.bounce.set(0.5)
 
-    //Bounce Collision Logic Start
+    // - - -Collision Logic Start
     game.physics.arcade.collide(shield, player1, null, reflect, this);
     game.physics.arcade.collide(player1, bat, null, stun, this)
     game.physics.arcade.collide(shield, bat, null, trampDude.collectBat, this)
+    game.physics.arcade.collide(rat, player2, grab)
+    // - - -Collision Logic End
     shield.body.velocity.x = 0
     player2.body.velocity.x = 0;
+    // DELETE THIS!
 
     // Shield speed and player1s speed!!!!!!!!!!!!!
 
@@ -416,9 +428,23 @@ var update = function() {
       bat.body.velocity.x = 40;
     }
 
+    //RAT MOVEMENT HERE
+    if(ratLeft){
+      rat.animations.play('right')
+      rat.body.velocity.x = -60;
+    }
+    else if(ratRight){
+      rat.animations.play('left')
+      rat.body.velocity.x = 60;
+    }
+
     //Check if Bat is out of Bounds
-    if(bat.body.x > 900 || bat.body.x < -12){
+    if(bat.body.x > 900 || bat.body.x < -10){
       bat.kill()
+    }
+    //Check if Rat is out of Bounds
+    if(rat.body.x > 900 || rat.body.x < -12){
+      rat.kill()
     }
 }
 
@@ -445,6 +471,15 @@ function stun(a, bat){
   bat.body.velocity.y = -120;
   bat.body.velocity.x = 0;
   bat.body.collideWorldBounds = true;
+}
+
+//Rat Grabs Player2
+function grab(){
+  player2.kill()
+  //add player2 dead sprite to rat x location.
+  game.time.events.add(1000, function(){
+    trampDude.lives = 0
+  })
 }
 
 // function to kill the player1 if they hit the ground
