@@ -18,7 +18,7 @@ cursors,jumpButton,bg,
 balls, shield, scoreText,
 livesText, flipText, flip2Text,
 userMesssage, currentAngle
-//----
+//---------------------
 
 //Player1 object
 var trampDude = {
@@ -196,10 +196,11 @@ var trampDude = {
       bat.visible = true;
       bat.body.allowGravity = false;
       bat.body.velocity.y = 0;
-      var yArray = [300,320,350, 380, 400, 420, 450, 480, 500, 550, 580]
-      var speeds = [190, 210, 230, 260, 280, 300, 325, 400, 450, 500, 540, 580, 600, 640, 700, 725, 745, 800, 825]
-      var batSpeed = speeds[Math.round(Math.random()* speeds.length-1)]
-      var selectedY = yArray[Math.round(Math.random() * yArray.length-1)]
+      var yArray = [300,320,350, 380, 400, 420, 480, 500, 550, 580]
+      var speeds = [190, 210, 230, 260, 280, 300, 325, 400, 500, 540, 580, 600, 640, 700, 725, 745, 800, 825]
+      var batSpeed = speeds[Math.floor(Math.random()* speeds.length)]
+      var selectedY = yArray[Math.floor(Math.random() * yArray.length)]
+      console.log(selectedY)
       bat.body.collideWorldBounds = false;
       var directions = ['left', 'right']
       var direction = directions[Math.round(Math.random())]
@@ -339,6 +340,8 @@ var create = function() {
 //Core Game Logic Gets Looped Here
 
 var update = function() {
+    // Check to see if player has lost game
+    gameOver()
     // GENERATE ROTATION ARRAY
     currentAngle = trampDude.getRotation();
     if(currentAngle > 60 || currentAngle < -60){
@@ -454,9 +457,14 @@ function checkBounds(player1){
   }
 }
 
-//Loosing Function
-function loose(){
-  game.state.start('loose');
+//Game_Over Function
+function gameOver(){
+  if(trampDude.lives == 0){
+    console.log('gameover')
+    game.state.start('game_over');
+    bat.kill()
+    trampDude.lives = 3;
+  }
 }
 
 // Render debuggin info
