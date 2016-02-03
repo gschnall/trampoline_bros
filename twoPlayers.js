@@ -1,4 +1,4 @@
-var game = new Phaser.Game(1000, 800, Phaser.CANVAS, 'phaser-example', 
+var game = new Phaser.Game(1000, 800, Phaser.CANVAS, 'phaser-example',
   { preload: preload,
     create: create,
     update: update,
@@ -23,6 +23,9 @@ var trampDude = {
   badString:'Poor Landing',
   goodString:'Great Job!',
   perfectString:'Perfect Dude!',
+  fadeText: function(myText){
+    game.time.events.add(100, function() { game.add.tween(myText).to({alpha: 0}, 1500, Phaser.Easing.Linear.None, true);}, this);
+  },
   tweenText: function(myText){
     game.time.events.add(100, function() { game.add.tween(myText).to({y: 0}, 1500, Phaser.Easing.Linear.None, true);    game.add.tween(myText).to({alpha: 0}, 1500, Phaser.Easing.Linear.None, true);}, this);
   },
@@ -46,20 +49,44 @@ var trampDude = {
   adjustScore: function(points){
       trampDude.score += points;
       scoreText.text = "Score: " + String(trampDude.score);
-    //score += points
-    // change score on visual
-  },
-  displayText: function(text){
-      userText ={ font: '58px Arial',fill:'rgb(16, 160, 252)', align:'left'};
-      userMessage = game.add.text(600,65, text, userText)
+      //DISPLAY SCORE
+      userText = { font: '39px Arial',fill:'#ffff00',stroke:'#000000', strokeThickness:5, align:'left'}
+      userMessage = game.add.text(400,205, "+" + points, userText)
       trampDude.tweenText(userMessage)
+  },
+  displayText: function(text, color){
+    color = color || 'rgb(16, 160, 252)'
+    userText ={ font: '58px Arial',fill:color,stroke:'rgb(49, 60, 156)', strokeThickness:5, align:'left'};
+    userMessage = game.add.text(500,95, text, userText)
+    trampDude.tweenText(userMessage)
+  },
+  insertAnyText: function(text, x, y, color, action, strokeColor){
+    color = color || '#ffff00'
+    action = action || 'tweenText'
+    strokeColor = strokeColor || '#000000'
+    userText = { font: '39px Arial',fill:color,stroke:strokeColor, strokeThickness:5, align:'left'}
+    userMessage = game.add.text(x,y, text, userText)
+    trampDude[action](userMessage)
+  },
+  restartPlayer1: function(){
+    player1.alive = true;
+    player1.exists = true;
+    player1.visible = true;
+    player1.body.rotation = 0;
+    player1.body.velocity.x = 0;
+    player1.body.x = shield.body.x
+    player1.body.y = 500;
+  },
+  killPlayer1: function(){
+    trampDude.lives -= 1
+    livesText.text = "Lives: " + String(trampDude.lives)
+    trampDude.displayText(trampDude.deadString)
+    trampDude.insertAnyText('-1 Life!', 550, 400, 'rgb(230, 25, 25)')
   },
   badLanding: function(pr){
     if(((pr < trampDude.positiveAngle) && (pr < trampDude.negativeAngle)) || ((pr > trampDude.positiveAngle) && (pr > trampDude.negativeAngle))){
-      trampDude.lives -= 1
-      livesText.text = "Lives: " + String(trampDude.lives)
-      trampDude.displayText(trampDude.deadString)
       trampDude.resetArr()
+      trampDude.killPlayer1();
       return true;
     }
     else{
@@ -68,13 +95,15 @@ var trampDude = {
   },
   checkLanding: function(pr){
     // pr = player rotation
-    trampDude.badLanding(pr)
+    //trampDude.badLanding(pr)
     if(trampDude.badLanding(pr)){ trampDude.resetArr(); return;}
     if(trampDude.checkFlipCompletion() == 'stayed'){trampDude.resetArr(); return;}
     else if(trampDude.checkFlipCompletion() == false){
       trampDude.lives -= 1
-      livesText.text = "Lives: " + String(trampDude.lives)
+      // Take awawy life only in single player option
+      //livesText.text = "Lives: " + String(trampDude.lives)
       trampDude.resetArr()
+      trampDude.insertAnyText('Wrong Flip Dude!', 480, 500, 'rgb(249, 207, 61)')
     }
     else{
       trampDude.addToFlipsArr()
@@ -109,6 +138,7 @@ var trampDude = {
   checkFlipCompletion: function(){
     var flipsNeeded = Number(trampDude.flipsNeeded[0][0])
     var flipType = trampDude.flipsNeeded[0].split(' ')[1]
+
     var forwardArr = '-90,180,90'
     var forwardArr2 = '-90,180,90,-90,180,90'
     var forwardArr3 = '-90,180,90,-90,180,90,-90,180,90,'
@@ -143,6 +173,16 @@ var trampDude = {
       }
     }
   },
+  generateBat: function(){
+
+  },
+  collectBat: function(){
+    bat.kill()
+    batDead = false;
+    trampDude.score += 50;
+    scoreText.text = "Score: " + String(trampDude.score);
+    trampDude.insertAnyText('+50', player2.body.x, player2.body.y, 'rgb(249, 207, 61)')
+  }
 // End trampDude Object
 
 }
@@ -153,12 +193,17 @@ function preload() {
     game.load.image('background', './imgs/the_sky2.png');
     game.load.spritesheet('dudeFlip', './imgs/trampDude/dudeFlip.png', 54, 68)
     game.load.spritesheet('alien', './imgs/oldsprite.png', 15.83, 24);
+    game.load.spritesheet('bats', './imgs/bats.png', 32, 36);
     // random rain from clouds
     //game.load.spritesheet('bullets', './imgs/rain.png', 14, 13);
 }
 
 
 // Global Variables
+var bat;
+var batDead = false;
+var batLeft = false;
+var batRight = true;
 var player1;
 var player2;
 var facing = 'left';
@@ -191,6 +236,7 @@ function create() {
     scoreText = game.add.text(4,15, "Score: " + String(trampDude.score), green)
     livesText = game.add.text(4,55, "Lives: " + String(trampDude.lives), orange)
 
+
     shield = game.add.sprite(360, 720, 'paddle');
     player2 = game.add.sprite(450, 720, 'alien')
 
@@ -208,11 +254,14 @@ function create() {
 
     // Shield Parameters
     player1 = game.add.sprite(400, 640, 'dudeFlip');
+    //BAT STARTS HIDDEN
+    bat = game.add.sprite(-32,400,'bats');
     //game.time.events.loop(150, fire, this);
 
     game.physics.enable(player1, Phaser.Physics.ARCADE);
     game.physics.enable(shield, Phaser.Physics.ARCADE);
     game.physics.enable(player2, Phaser.Physics.ARCADE)
+    game.physics.enable(bat, Phaser.Physics.ARCADE)
 
     //player1 collision
     player1.body.bounce.y = 0.2;
@@ -232,6 +281,11 @@ function create() {
     player2.animations.add('idle', [5], true);
     player2.animations.add('right', [6, 7, 8, 9, 10], 10, true);
 
+    // Bat Enemy Animations
+     bat.animations.add('right', [1,2,3],10, true);
+     bat.animations.add('left', [6,5,4],10, true);
+     bat.animations.add('dead', [2], true);
+
     // player11 Key Events
     cursors = game.input.keyboard.createCursorKeys();
     //Trampoline player1 Key Events
@@ -247,7 +301,7 @@ function create() {
     game.physics.arcade.enable(game.world, true);
 
     //shield.body.allowGravity = 0;
-    shield.body.immovable = true
+    //shield.body.immovable = true
     player2.body.immovable = true
 
     //Parameters for Player 1 Rotation
@@ -257,6 +311,7 @@ function create() {
 
     // No Gravity for the bg Image
     bg.body.allowGravity = false;
+    bat.body.allowGravity = false;
 }
 
 //Core Game Logic Gets Looped Here
@@ -275,6 +330,8 @@ function update() {
 
     //Bounce Collision Logic Start
     game.physics.arcade.collide(shield, player1, null, reflect, this);
+    game.physics.arcade.collide(player1, bat, null, stun, this)
+    game.physics.arcade.collide(shield, bat, null, trampDude.collectBat, this)
     shield.body.velocity.x = 0
     player2.body.velocity.x = 0;
 
@@ -295,7 +352,6 @@ function update() {
         player1.animations.play('idle');
     }
 
-
     //Logic for trampoline player 2
     if (aButton.isDown){
         shield.body.velocity.x = -170;
@@ -315,25 +371,6 @@ function update() {
         }
     }
     else{ player2.animations.play('idle')}
-    //Keybindings to Adjust the angle of the shield
-    if(tiltRightButton.isDown){
-      shield.angle = 10;
-      //tiltRight = true;
-      //tiltLeft = false;
-      //tiltStraight = false;
-    }
-    else if(tiltLeftButton.isDown){
-      shield.angle = -10
-      //tiltRight = true;
-      //tiltLeft = false;
-      //tiltStraight = false;
-    }
-    else if(tiltStraightButton.isDown){
-      shield.angle = 0
-      //tiltRight = false;
-      //tiltLeft = false;
-      //tiltStraight = true;
-    }
     //Check to see if character is on ground before jumping again!
     if ((jumpButton.isDown || wButton.isDown)&& shield.body.onFloor() && game.time.now > jumpTimer){
         shield.body.velocity.y = -150;
@@ -343,6 +380,18 @@ function update() {
     }
     // Check if player1 Is Dead
     checkBounds(player1)
+    //BAT MOVEMENT HERE
+    if(batDead){
+      bat.animations.play('dead')
+    }
+    else if(batLeft){
+      bat.animations.play('left')
+      bat.body.velocity.x = -40;
+    }
+    else if(batRight){
+      bat.animations.play('right')
+      bat.body.velocity.x = 40;
+    }
 }
 
 // Function to fire particles
@@ -377,13 +426,21 @@ function reflect(a, player1){
       return false;
     }
 }
-
+function stun(a, bat){
+  bat.body.allowGravity = true;
+  batDead = true;
+  bat.body.velocity.y = -120;
+  bat.body.velocity.x = 0;
+  bat.body.collideWorldBounds = true;
+}
 
 // function to kill the player1 if they hit the ground
 function checkBounds(player1){
-
   if(player1.body.y > 759){
+    trampDude.killPlayer1()
+    trampDude.insertAnyText('OOOPS!', player2.body.x -50 , player2.body.y - 50, 'rgb(20, 230, 198)', 'fadeText')
     player1.kill();
+    trampDude.restartPlayer1()
   }
 }
 
@@ -391,7 +448,6 @@ function checkBounds(player1){
 
 // Render debuggin info
 function render () {
-
     // DEBUGGING INFORMATION
     // game.debug.spriteInfo(player1, 32, 32);
     // game.debug.text('angularVelocity: ' + player1.body.angularVelocity, 32, 200);
