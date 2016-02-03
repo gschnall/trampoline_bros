@@ -1,10 +1,26 @@
-var game = new Phaser.Game(1000, 800, Phaser.CANVAS, 'phaser-example',
+/*
+var game = new Phaser.Game(950, 800, Phaser.CANVAS, 'phaser-example',
   { preload: preload,
     create: create,
     update: update,
     render: render
   });
+*/
 
+//---- Global Variables
+var batDead = false;
+var batLeft = false;
+var batRight = true;
+var facing = 'left';
+var jumpTimer = 0;
+var bat, player1, player2,
+cursors,jumpButton,bg,
+balls, shield, scoreText,
+livesText, flipText, flip2Text,
+userMesssage, currentAngle
+//----
+
+//Player1 object
 var trampDude = {
   difficulty: 1,
   negativeAngle: -31,
@@ -180,7 +196,7 @@ var trampDude = {
       bat.visible = true;
       bat.body.allowGravity = false;
       bat.body.velocity.y = 0;
-      var yArray = [200, 250, 300, 350, 400, 450, 500, 550]
+      var yArray = [300,320,350, 380, 400, 420, 450, 480, 500, 550, 580]
       var speeds = [190, 210, 230, 260, 280, 300, 325, 400, 450, 500, 540, 580, 600, 640, 700, 725, 745, 800, 825]
       var batSpeed = speeds[Math.round(Math.random()* speeds.length-1)]
       var selectedY = yArray[Math.round(Math.random() * yArray.length-1)]
@@ -216,7 +232,7 @@ var trampDude = {
 }
 
 
-function preload() {
+var preload = function(){
     game.load.image('paddle', './imgs/trampoline.png');
     game.load.image('background', './imgs/the_sky2.png');
     game.load.spritesheet('dudeFlip', './imgs/trampDude/dudeFlip.png', 54, 68)
@@ -227,31 +243,9 @@ function preload() {
 }
 
 
-// Global Variables
-var bat;
-var batDead = false;
-var batLeft = false;
-var batRight = true;
-var player1;
-var player2;
-var facing = 'left';
-var jumpTimer = 0;
-var cursors;
-var jumpButton;
-var bg;
-var balls;
-var shield;
-// Text to Display
-var scoreText;
-var livesText;
-var flipText;
-var flip1Text;
-var flip2Text;
-var userMessage;
-var currentAngle;
 
 // Create all our Stuff
-function create() {
+var create = function() {
     //Background Spirit - Has No Gravity
     bg = game.add.sprite(0, 0, 'background');
     // Text to Create
@@ -344,7 +338,7 @@ function create() {
 
 //Core Game Logic Gets Looped Here
 
-function update() {
+var update = function() {
     // GENERATE ROTATION ARRAY
     currentAngle = trampDude.getRotation();
     if(currentAngle > 60 || currentAngle < -60){
@@ -425,22 +419,6 @@ function update() {
     }
 }
 
-// Function to fire particles
-// FOR RAIN ADDITION
-/*
-function fire(){
-  //var ball = balls.getFirstExists(false);
-
-  if(ball){
-    ball.frame = game.rnd.integerInRange(0,6);
-    ball.exists = true;
-    ball.reset(game.world.randomX, 0);
-    ball.body.bounce = 0.8
-  }
-}
-*/
-
-
 // Function to reflect trampDude!****
 function reflect(a, player1){
     if(player1.y > (shield.y +15)){
@@ -476,7 +454,10 @@ function checkBounds(player1){
   }
 }
 
-
+//Loosing Function
+function loose(){
+  game.state.start('loose');
+}
 
 // Render debuggin info
 function render () {
@@ -486,4 +467,11 @@ function render () {
     // game.debug.text('angularAcceleration: ' + player1.body.angularAcceleration, 32, 232);
     // game.debug.text('angularDrag: ' + player1.body.angularDrag, 32, 264);
     // game.debug.text('deltaZ: ' + player1.body.deltaZ(), 32, 296);
+}
+
+var playState = {
+  preload: preload,
+  create: create,
+  update: update,
+  render: render,
 }
