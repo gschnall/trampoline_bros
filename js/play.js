@@ -19,8 +19,41 @@ var bat, rat, player1, player2,
 cursors,jumpButton,bg,
 balls, shield, scoreText,
 livesText, flipText, flip2Text,
-userMesssage, currentAngle
+userMesssage, currentAngle,
+// Audio Element Variables
+poor_landing_sound, bat_sound,
+bounce_sound, good_landing_sound,
+perfect_landing_sound, pickup_bat_sound,
+rat_sound,stun_bat_sound, wrong_flip_sound,
+player2_jump_sound, music,
+die_sound, die_landing_sound,
+eat_player2_sound, flapping_sound
 //---------------------
+
+// Audio Object
+sounds = {
+  generateFlapping: function(){
+    sounds.flapping()
+    flapping_sound.onLoop.add(sounds.flapping)
+  },
+  playSoundTrack: function(){
+    music.play('',0,1,true)
+  },
+  bounce: function(){bounce_sound.play('bounce')},
+  jump: function(){player2_jump_sound.play('jump')},
+  poorLanding: function(){poor_landing_sound.play('poor_landing')},
+  bat: function(){bat_sound.play('bat_sound')},
+  goodLanding: function(){good_landing_sound.play('good_landing')},
+  perfectLanding: function(){perfect_landing_sound.play('perfect_landing')},
+  pickupBat: function(){pickup_bat_sound.play('pickup_bat')},
+  rat: function(){rat_sound.play('rat_sound')},
+  stunBat: function(){stun_bat_sound.play('stun_bat')},
+  wrongFlip: function(){wrong_flip_sound.play('wrong_flip')},
+  die: function(){die_sound.play('die_sound')},
+  dieLanding: function(){die_landing_sound.play('die_landing')},
+  eatPlayer2: function(){eat_player2_sound.play('eat_player2')},
+  flapping: function(){flapping_sound.play('flapping_sound')},
+}
 
 //Player1 object
 var trampDude = {
@@ -97,6 +130,8 @@ var trampDude = {
     player1.body.y = 500;
   },
   killPlayer1: function(){
+    sounds.dieLanding()
+    sounds.poorLanding()
     trampDude.lives -= 1
     livesText.text = "Lives: " + String(trampDude.lives)
     trampDude.displayText(trampDude.deadString)
@@ -104,6 +139,8 @@ var trampDude = {
   },
   badLanding: function(pr){
     if(((pr < trampDude.positiveAngle) && (pr < trampDude.negativeAngle)) || ((pr > trampDude.positiveAngle) && (pr > trampDude.negativeAngle))){
+      sounds.dieLanding()
+      sounds.poorLanding()
       trampDude.resetArr()
       trampDude.killPlayer1();
       return true;
@@ -118,11 +155,13 @@ var trampDude = {
     if(trampDude.badLanding(pr)){ trampDude.resetArr(); return;}
     if(trampDude.checkFlipCompletion() == 'stayed'){trampDude.resetArr(); return;}
     else if(trampDude.checkFlipCompletion() == false){
+      sounds.poorLanding()
       trampDude.lives -= 1
       // Take awawy life only in single player option
       //livesText.text = "Lives: " + String(trampDude.lives)
       trampDude.resetArr()
-      trampDude.insertAnyText('Wrong Flip Dude!', 480, 500, 'rgb(249, 207, 61)')
+      sounds.wrongFlip()
+      trampDude.insertAnyText('Wrong Flip Dude!', 480, 500, 'rgb(252, 181, 21)')
     }
     else{
       trampDude.addToFlipsArr()
@@ -130,17 +169,20 @@ var trampDude = {
       trampDude.adjustScore(100);
       if(pr <= 10 && pr >= -10){
         //insert acceleration
-        trampDude.displayText(trampDude.perfectString)
+        sounds.perfectLanding()
+        trampDude.displayText(trampDude.perfectString, 'rgb(21, 232, 29)')
         player1.body.velocity.y -= 135
       }
       else if(pr <= 20 && pr >= -20){
         //insert acceleration
+        sounds.goodLanding()
         trampDude.displayText(trampDude.goodString)
         player1.body.velocity.y -= 100
       }
       else{
-        trampDude.displayText(trampDude.badString)
+        trampDude.displayText(trampDude.badString, 'rgb(255, 225, 24)')
         player1.body.velocity.y -= 30
+        sounds.poorLanding()
       }
     }
   },
@@ -179,7 +221,6 @@ var trampDude = {
     else if(flipsNeeded == 2){
       if(flipType == 'Front'){
         return forwardArr2 == String(arr)
-        console.log('register')
       }
       else{
         return backwardsArr2 == String(arr)
@@ -201,6 +242,7 @@ var trampDude = {
 var enemies = {
   generateBat: function(){
     if(Math.floor(Math.random()+1) && bat.alive !== true){
+      sounds.bat()
       console.log('working')
       bat.alive = true;
       bat.exists = true;
@@ -233,7 +275,8 @@ var enemies = {
   },
   generateRat: function(){
     if(Math.floor(Math.random()+1) && rat.alive !== true){
-      trampDude.insertAnyText('RAT!!!', player1.body.x, player1.body.y, 'rgb(237, 32, 26)', 'fadeText' )
+        //sounds.rat()
+        trampDude.insertAnyText('RAT!!!', player1.body.x, player1.body.y, 'rgb(237, 32, 26)', 'fadeText' )
         rat.alive = true;
         rat.exists = true;
         rat.visible = true;
@@ -259,6 +302,7 @@ var enemies = {
     }
   },
   collectBat: function(){
+    sounds.pickupBat()
     bat.kill()
     batDead = false;
     trampDude.score += 50;
@@ -275,14 +319,65 @@ var preload = function(){
     game.load.spritesheet('alien', './imgs/oldsprite.png', 15.83, 24);
     game.load.spritesheet('bats', './imgs/bats.png', 32, 36);
     game.load.spritesheet('rats', './imgs/rats.png', 32, 22);
-    // random rain from clouds
-    //game.load.spritesheet('bullets', './imgs/rain.png', 14, 13);
+    //---- Sound Track
+    game.load.audio('soundtrack', './audio/sound_track.mp3')
+    //---- Audio Sprites
+    game.load.audio('poor_landing', './audio/badLanding.mp3')
+    game.load.audio('bat_sound', './audio/bat.mp3')
+    game.load.audio('bounce', './audio/bounce2.mp3')
+    game.load.audio('jump', './audio/Jump3.mp3')
+    game.load.audio('good_landing', './audio/goodLanding.mp3')
+    game.load.audio('perfect_landing', './audio/perfect.mp3')
+    game.load.audio('pickup_bat', './audio/pickup.mp3')
+    game.load.audio('rat_sound', './audio/rat.mp3')
+    game.load.audio('stun_bat', './audio/stun.mp3')
+    game.load.audio('wrong_flip', './audio/wrongFlip.mp3')
+    game.load.audio('die', './audio/die.mp3')
+    game.load.audio('dieLanding', './audio/dieLanding.mp3')
+    game.load.audio('eat_player2', './audio/eat_player2.mp3')
+    game.load.audio('flapping', './audio/flapping.mp3')
+    //__________________
 }
 
 // Create all our Stuff
 var create = function() {
     //Background Spirit - Has No Gravity
     bg = game.add.sprite(0, 0, 'background');
+    //---- Sound Track
+    music = game.add.audio('soundtrack',true)
+    music.play('',0,1,true)
+    music.onLoop.add(sounds.playSoundTrack)
+    // Setup Audio Sprites ---
+    poor_landing_sound = game.add.audio('poor_landing')
+    bat_sound = game.add.audio('bat_sound')
+    bounce_sound = game.add.audio('bounce')
+    player2_jump_sound = game.add.audio('jump')
+    good_landing_sound = game.add.audio('good_landing')
+    perfect_landing_sound = game.add.audio('perfect_landing')
+    pickup_bat_sound = game.add.audio('pickup_bat')
+    rat_sound = game.add.audio('rat_sound')
+    stun_bat_sound = game.add.audio('stun_bat')
+    wrong_flip_sound = game.add.audio('wrong_flip')
+    die_sound = game.add.audio('die')
+    die_landing_sound = game.add.audio('dieLanding')
+    eat_player2_sound = game.add.audio('eat_player2')
+    flapping_sound = game.add.audio('flapping')
+    // ----------------------
+    poor_landing_sound.addMarker('poor_landing','0','1.5')
+    bat_sound.addMarker('bat_sound',0,2)
+    bounce_sound.addMarker('bounce',0,2)
+    player2_jump_sound.addMarker('jump',0,2)
+    good_landing_sound.addMarker('good_landing',0,2)
+    perfect_landing_sound.addMarker('perfect_landing',0,2)
+    pickup_bat_sound.addMarker('pickup_bat',0,2)
+    rat_sound.addMarker('rat_sound', 0,2)
+    stun_bat_sound.addMarker('stun_bat',0,2)
+    wrong_flip_sound.addMarker('wrong_flip',0,2)
+    die_sound.addMarker('die_sound',0,2)
+    die_landing_sound.addMarker('die_landing',0,2)
+    eat_player2_sound.addMarker('eat_player2',0,2)
+    flapping_sound.addMarker('flapping_sound',0,2)
+    // ______________________
     // Text to Create
     var style = { font: "32px Arial",fill:'#ffffff',stroke:'#000000', strokeThickness:5, align:'left'};
     var highlighted = { font: '32px Arial',fill:'#ffff00',stroke:'#000000', strokeThickness:5, align:'left'}
@@ -446,6 +541,7 @@ var update = function() {
     else{ player2.animations.play('idle')}
     //Check to see if character is on ground before jumping again!
     if ((jumpButton.isDown || wButton.isDown)&& shield.body.onFloor() && game.time.now > jumpTimer){
+        sounds.jump()
         shield.body.velocity.y = -150;
         jumpTimer = game.time.now + 750;
         player2.body.velocity.y = -150
@@ -456,14 +552,17 @@ var update = function() {
     //BAT MOVEMENT HERE
     if(batDead){
       bat.animations.play('dead')
+      flapping_sound.stop()
     }
     else if(batLeft){
       bat.animations.play('left')
       bat.body.velocity.x = -40;
+      sounds.generateFlapping()
     }
     else if(batRight){
       bat.animations.play('right')
       bat.body.velocity.x = 40;
+      sounds.generateFlapping()
     }
 
     //RAT MOVEMENT HERE
@@ -479,6 +578,7 @@ var update = function() {
     //Check if Bat is out of Bounds
     if(bat.body.x > 900 || bat.body.x < -10){
       bat.kill()
+      flapping_sound.stop()
     }
     //Check if Rat is out of Bounds
     if(rat.body.x > 900 || rat.body.x < -20){
@@ -492,6 +592,7 @@ function reflect(a, player1){
       return true;
     }
     else{
+      sounds.bounce()
       player1.body.velocity.y = -500 || player1.body.velocity.y
       player1.body.velocity.x = 0;
       trampDude.checkLanding(trampDude.getRotation())
@@ -501,6 +602,7 @@ function reflect(a, player1){
     }
 }
 function stun(a, bat){
+  sounds.stunBat()
   bat.body.allowGravity = true;
   batDead = true;
   bat.body.velocity.y = -120;
@@ -511,6 +613,7 @@ function stun(a, bat){
 
 //Rat Grabs Player2
 function grab(){
+  sounds.eatPlayer2()
   player2.kill()
   //add player2 dead sprite to rat x location.
   game.time.events.add(1000, function(){
@@ -531,11 +634,13 @@ function checkBounds(player1){
 //Game_Over Function
 function gameOver(){
   if(trampDude.lives == 0){
-    console.log('gameover')
+    sounds.die()
     game.state.start('game_over');
     bat.kill()
     rat.kill()
     trampDude.lives = 3;
+    flapping_sound.stop()
+    music.stop()
   }
 }
 
