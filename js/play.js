@@ -12,7 +12,7 @@ var batLeft = false;
 var batRight = false;
 var ratDead = false;
 var ratLeft = false;
-var ratRight = true;
+var ratRight = false;
 var facing = 'left';
 var jumpTimer = 0;
 var bat, rat, player1, player2,
@@ -131,7 +131,7 @@ var trampDude = {
       if(pr <= 10 && pr >= -10){
         //insert acceleration
         trampDude.displayText(trampDude.perfectString)
-        player1.body.velocity.y -= 200
+        player1.body.velocity.y -= 135
       }
       else if(pr <= 20 && pr >= -20){
         //insert acceleration
@@ -160,7 +160,6 @@ var trampDude = {
   checkFlipCompletion: function(){
     var flipsNeeded = Number(trampDude.flipsNeeded[0][0])
     var flipType = trampDude.flipsNeeded[0].split(' ')[1]
-
     var forwardArr = '-90,180,90'
     var forwardArr2 = '-90,180,90,-90,180,90'
     var forwardArr3 = '-90,180,90,-90,180,90,-90,180,90,'
@@ -195,6 +194,11 @@ var trampDude = {
       }
     }
   },
+// End trampDude Object
+
+}
+
+var enemies = {
   generateBat: function(){
     if(Math.floor(Math.random()+1) && bat.alive !== true){
       console.log('working')
@@ -227,15 +231,41 @@ var trampDude = {
       }
     }
   },
+  generateRat: function(){
+    if(Math.floor(Math.random()+1) && rat.alive !== true){
+      trampDude.insertAnyText('RAT!!!', player1.body.x, player1.body.y, 'rgb(237, 32, 26)', 'fadeText' )
+        rat.alive = true;
+        rat.exists = true;
+        rat.visible = true;
+        var leftSpeeds = [190, 210, 230, 260, 280, 300, 325, 400, 500, 540, 580, 600, 640, 700, 725, 745, 800, 825]
+        var rightSpeeds = [-190, -210, -230, -260, -280, -300, -325, -400, -500, -540, -580, -600, -640, -700, -725]
+        //var batSpeed = speeds[Math.floor(Math.random()* speeds.length)]
+        rat.body.collideWorldBounds = false;
+        var directions = ['left', 'right']
+        var direction = directions[Math.round(Math.random())]
+        direction = "right"
+        if(direction == 'left'){
+          rat.body.velocity.x = 40
+          rat.body.x = 860;
+          ratRight = false;
+          ratLeft = true;
+        }
+        else{
+          rat.body.velocity.x = -40
+          rat.body.x = -19;
+          ratLeft = false;
+          ratRight = true;
+        }
+    }
+  },
   collectBat: function(){
     bat.kill()
     batDead = false;
     trampDude.score += 50;
     scoreText.text = "Score: " + String(trampDude.score);
     trampDude.insertAnyText('+50', player2.body.x, player2.body.y, 'rgb(249, 207, 61)')
+    enemies.generateRat()
   }
-// End trampDude Object
-
 }
 
 var preload = function(){
@@ -284,7 +314,7 @@ var create = function() {
     //BAT STARTS HIDDEN
     bat = game.add.sprite(-35,400,'bats');
     //RAT STARTS HIDDEN
-    rat = game.add.sprite(-10, 780, 'rats');
+    rat = game.add.sprite(-35, 780, 'rats');
     //game.time.events.loop(150, fire, this);
 
     game.physics.enable(player1, Phaser.Physics.ARCADE);
@@ -294,7 +324,7 @@ var create = function() {
     game.physics.enable(rat, Phaser.Physics.ARCADE)
 
     //player1 collision
-    player1.body.bounce.y = 0.2;
+    player1.body.bounce.y = 0.5;
     player1.body.collideWorldBounds = true;
     shield.body.collideWorldBounds = true;
     player2.body.collideWorldBounds = true;
@@ -364,12 +394,16 @@ var update = function() {
     player1.body.angularAcceleration = 0;
     //Player 1 bounce off walls
     player1.body.collideWorldBounds = true;
-    player1.body.bounce.set(0.5)
+    player1.body.bounce.set(0.43)
+    //Except the top boundry
+    if(player1.body.y > 760){
+      player1.body.collideWorldBounds = false;
+    }
 
     // - - -Collision Logic Start
     game.physics.arcade.collide(shield, player1, null, reflect, this);
     game.physics.arcade.collide(player1, bat, null, stun, this)
-    game.physics.arcade.collide(shield, bat, null, trampDude.collectBat, this)
+    game.physics.arcade.collide(shield, bat, null, enemies.collectBat, this)
     game.physics.arcade.collide(rat, player2, grab)
     // - - -Collision Logic End
     shield.body.velocity.x = 0
@@ -447,28 +481,22 @@ var update = function() {
       bat.kill()
     }
     //Check if Rat is out of Bounds
-    if(rat.body.x > 900 || rat.body.x < -12){
+    if(rat.body.x > 900 || rat.body.x < -20){
       rat.kill()
     }
 }
 
 // Function to reflect trampDude!****
 function reflect(a, player1){
-    if(player1.body.velocity.y >= -445){
-      player1.body.velocity.y = -445
-    }
     if(player1.y > (shield.y +15)){
       return true;
     }
     else{
-      //player1.body.velocity.y = -540 || player1.body.velocity.y
+      player1.body.velocity.y = -500 || player1.body.velocity.y
       player1.body.velocity.x = 0;
       trampDude.checkLanding(trampDude.getRotation())
-      //player1.body.velocity.y = -180;
-      // ADD EXTRA VELOCITY HERE IF PLAYER LANDS WELL
-      // Check list and all that stuff here
       player1.body.velocity.x = shield.body.velocity.x * 1.5 ;
-      trampDude.generateBat()
+      enemies.generateBat()
       return false;
     }
 }
@@ -506,6 +534,7 @@ function gameOver(){
     console.log('gameover')
     game.state.start('game_over');
     bat.kill()
+    rat.kill()
     trampDude.lives = 3;
   }
 }
