@@ -30,6 +30,7 @@ var trampDude = {
   flipsNeeded: ["1 Back Flip","1 Front Flip"],
   lives: 3,
   rotationArray: [],
+  velocityY: 0,
   getRotation: function(){
     return Math.round(player1.body.rotation);
   },
@@ -130,13 +131,16 @@ var trampDude = {
       if(pr <= 10 && pr >= -10){
         //insert acceleration
         trampDude.displayText(trampDude.perfectString)
+        player1.body.velocity.y -= 200
       }
       else if(pr <= 20 && pr >= -20){
         //insert acceleration
         trampDude.displayText(trampDude.goodString)
+        player1.body.velocity.y -= 100
       }
       else{
         trampDude.displayText(trampDude.badString)
+        player1.body.velocity.y -= 30
       }
     }
   },
@@ -450,11 +454,14 @@ var update = function() {
 
 // Function to reflect trampDude!****
 function reflect(a, player1){
+    if(player1.body.velocity.y >= -445){
+      player1.body.velocity.y = -445
+    }
     if(player1.y > (shield.y +15)){
       return true;
     }
     else{
-      player1.body.velocity.y = -540 || player1.body.velocity.y
+      //player1.body.velocity.y = -540 || player1.body.velocity.y
       player1.body.velocity.x = 0;
       trampDude.checkLanding(trampDude.getRotation())
       //player1.body.velocity.y = -180;
@@ -469,8 +476,9 @@ function stun(a, bat){
   bat.body.allowGravity = true;
   batDead = true;
   bat.body.velocity.y = -120;
-  bat.body.velocity.x = 0;
+  bat.body.velocity.x += 20;
   bat.body.collideWorldBounds = true;
+  game.time.events.add(200, function(){ bat.body.velocity.y = 0})
 }
 
 //Rat Grabs Player2
