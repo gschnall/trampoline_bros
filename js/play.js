@@ -287,7 +287,7 @@ var create = function() {
     game.physics.enable(bat, Phaser.Physics.ARCADE)
 
     //player1 collision
-    player1.body.bounce.y = 0.2;
+    player1.body.bounce.y = 0.3;
     player1.body.collideWorldBounds = true;
     shield.body.collideWorldBounds = true;
     player2.body.collideWorldBounds = true;
