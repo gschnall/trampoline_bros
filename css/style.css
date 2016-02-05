@@ -1,0 +1,20 @@
+.instruct{
+  margin:0 auto;
+  display: inline-block;
+  margin-right:20px;
+}
+#container{
+  text-align: center;
+  background-color: lightgrey;
+  margin:0 auto;
+  margin-bottom:2px;
+  min-width: 940px;
+}
+canvas{
+  margin: 0 auto;
+}
+
+h3{
+  font-weight: bolder;
+  text-decoration: underline;
+}

@@ -649,6 +649,8 @@ function gameOver(){
     rat.kill()
     trampDude.lives = 3;
     music.stop()
+    // FLIPS SET HERE FOR DEMO PURPOSES
+    trampDude.flipsNeeded = ["1 Front Flip","1 Back Flip"]
     if(trampDude.score > topScore){
       topScore = trampDude.score
     }
