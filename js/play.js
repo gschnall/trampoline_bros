@@ -15,11 +15,13 @@ var ratLeft = false;
 var ratRight = false;
 var facing = 'left';
 var jumpTimer = 0;
+var topScore = 0;
 var bat, rat, player1, player2,
 cursors,jumpButton,bg,
 balls, shield, scoreText,
 livesText, flipText, flip2Text,
 userMesssage, currentAngle,
+intro_pic,
 // Audio Element Variables
 poor_landing_sound, bat_sound,
 bounce_sound, good_landing_sound,
@@ -166,20 +168,22 @@ var trampDude = {
     else{
       trampDude.addToFlipsArr()
       trampDude.resetArr()
-      trampDude.adjustScore(100);
       if(pr <= 10 && pr >= -10){
         //insert acceleration
+        trampDude.adjustScore(100);
         sounds.perfectLanding()
         trampDude.displayText(trampDude.perfectString, 'rgb(21, 232, 29)')
         player1.body.velocity.y -= 135
       }
       else if(pr <= 20 && pr >= -20){
         //insert acceleration
+        trampDude.adjustScore(50);
         sounds.goodLanding()
         trampDude.displayText(trampDude.goodString)
         player1.body.velocity.y -= 100
       }
       else{
+        trampDude.adjustScore(20);
         trampDude.displayText(trampDude.badString, 'rgb(255, 225, 24)')
         player1.body.velocity.y -= 30
         sounds.poorLanding()
@@ -419,11 +423,8 @@ var create = function() {
     game.physics.enable(rat, Phaser.Physics.ARCADE)
 
     //player1 collision
-<<<<<<< HEAD
     player1.body.bounce.y = 0.3;
-=======
     player1.body.bounce.y = 0.5;
->>>>>>> create_rat
     player1.body.collideWorldBounds = true;
     shield.body.collideWorldBounds = true;
     player2.body.collideWorldBounds = true;
@@ -638,6 +639,7 @@ function checkBounds(player1){
 //Game_Over Function
 function gameOver(){
   if(trampDude.lives == 0){
+    intro_pic = game.add.sprite(200, 300, 'end_image.png');
     sounds.die()
     game.state.start('game_over');
     bat.kill()
@@ -645,6 +647,9 @@ function gameOver(){
     trampDude.lives = 3;
     flapping_sound.stop()
     music.stop()
+    if(trampDude.score > topScore){
+      topScore = trampDude.score
+    }
   }
 }
 
