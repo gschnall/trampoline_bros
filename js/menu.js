@@ -5,7 +5,7 @@ var menuState = {
     game.load.image('end_image', './imgs/dead_player1.png')
   },
   create: function() {
-    var bg = game.add.sprite(0, -320, 'background');
+    var bg = game.add.sprite(1, -320, 'background');
     var intro_pic = game.add.sprite(200, 300, 'intro_image');
     var introStyle2 = { font: "48px Arial",fill:'#ffffff',stroke:'#000000', strokeThickness:12};
     var nameLabel = game.add.text(100,130, 'Klydebert & Squirt: Trampoline Bros!',introStyle2)

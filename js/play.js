@@ -245,7 +245,7 @@ var trampDude = {
 
 var enemies = {
   generateBat: function(){
-    if(Math.floor(Math.random()+1) && bat.alive !== true){
+    if(Math.floor(Math.random()*2) && bat.alive !== true){
       sounds.bat()
       console.log('working')
       bat.alive = true;
@@ -254,22 +254,23 @@ var enemies = {
       bat.body.allowGravity = false;
       bat.body.velocity.y = 0;
       var yArray = [300,320,350, 380, 400, 420, 480, 500, 550, 580]
-      var speeds = [190, 210, 230, 260, 280, 300, 325, 400, 500, 540, 580, 600, 640, 700, 725, 745, 800, 825]
-      var batSpeed = speeds[Math.floor(Math.random()* speeds.length)]
+      var leftSpeeds = [40, 50, 60, 70, 80, 90, 100, 120, 130]
+      var rightSpeeds = [-40, -50, -60, -70, -80, -90, -100, -120, -130]
+      //var batSpeed = speeds[Math.floor(Math.random()* speeds.length)]
       var selectedY = yArray[Math.floor(Math.random() * yArray.length)]
       bat.body.collideWorldBounds = false;
       var directions = ['left', 'right']
-      var direction = directions[Math.round(Math.random())]
+      var direction = directions[Math.floor(Math.random() *2)]
       console.log(direction)
       if(direction == 'left'){
-        bat.body.velocity.x = 40
+        bat.body.velocity.x = rightSpeeds[Math.floor(Math.random()* rightSpeeds.length)]
         bat.body.y = selectedY
         bat.body.x = 810;
         batRight = false;
         batLeft = true;
       }
       else{
-        bat.body.velocity.x = -40
+        bat.body.velocity.x = leftSpeeds[Math.floor(Math.random()* leftSpeeds.length)]
         bat.body.y = selectedY;
         bat.body.x = -10;
         batLeft = false;
@@ -278,7 +279,7 @@ var enemies = {
     }
   },
   generateRat: function(){
-    if(Math.floor(Math.random()+1) && rat.alive !== true){
+    if(Math.floor(Math.random()*2) && rat.alive !== true){
         //sounds.rat()
         trampDude.insertAnyText('RAT!!!', player1.body.x, player1.body.y, 'rgb(237, 32, 26)', 'fadeText' )
         rat.alive = true;
@@ -346,7 +347,7 @@ var preload = function(){
 // Create all our Stuff
 var create = function() {
     //Background Spirit - Has No Gravity
-    bg = game.add.sprite(0, 0, 'background');
+    bg = game.add.sprite(1, 0, 'background');
     //---- Sound Track
     music = game.add.audio('soundtrack',true)
     music.play('',0,1,true)
@@ -560,12 +561,12 @@ var update = function() {
     }
     else if(batLeft){
       bat.animations.play('left')
-      bat.body.velocity.x = -40;
+      //bat.body.velocity.x = -40;
       sounds.generateFlapping()
     }
     else if(batRight){
       bat.animations.play('right')
-      bat.body.velocity.x = 40;
+      //bat.body.velocity.x = 40;
       sounds.generateFlapping()
     }
 

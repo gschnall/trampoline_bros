@@ -3,7 +3,7 @@ var game_overState = {
     game.load.image('outImage', './imgs/dead_player1.png');
   },
   create: function() {
-    var bg = game.add.sprite(0, -320, 'background');
+    var bg = game.add.sprite(1, -320, 'background');
     var outro_pic = game.add.sprite(200, 400, 'outImage');
     var gameOver = game.add.text(200, 100,
                                    'GAME OVER',
