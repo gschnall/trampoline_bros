@@ -20,6 +20,7 @@ var game_overState = {
     spaceBar.onDown.addOnce(game_overState.restart);
   },
   restart: function() {
+    select_sound.play()
     console.log('ending menu')
     trampDude.score = 0;
     game.state.start('menu');

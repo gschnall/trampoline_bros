@@ -307,6 +307,7 @@ var enemies = {
   },
   collectBat: function(){
     sounds.pickupBat()
+    player2.body.velocity.y = -150
     bat.kill()
     batDead = false;
     trampDude.score += 50;
