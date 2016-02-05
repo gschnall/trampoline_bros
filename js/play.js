@@ -158,7 +158,7 @@ var trampDude = {
     if(trampDude.checkFlipCompletion() == 'stayed'){trampDude.resetArr(); return;}
     else if(trampDude.checkFlipCompletion() == false){
       sounds.poorLanding()
-      trampDude.lives -= 1
+      //trampDude.lives -= 1
       // Take awawy life only in single player option
       //livesText.text = "Lives: " + String(trampDude.lives)
       trampDude.resetArr()
@@ -610,10 +610,12 @@ function stun(a, bat){
   sounds.stunBat()
   bat.body.allowGravity = true;
   batDead = true;
-  bat.body.velocity.y = -120;
+  bat.body.velocity.y = -220;
   bat.body.velocity.x += 20;
   bat.body.collideWorldBounds = true;
-  game.time.events.add(200, function(){ bat.body.velocity.y = 0})
+  game.time.events.add(400, function(){ bat.body.velocity.y = 0})
+  if(bat.body.x > 870){bat.body.y = 0}
+  //game.physics.arcade.collide(player1, bat, null, reflect, this)
 }
 
 //Rat Grabs Player2
