@@ -247,7 +247,6 @@ var enemies = {
   generateBat: function(){
     if(Math.floor(Math.random()*2) && bat.alive !== true){
       sounds.bat()
-      console.log('working')
       bat.alive = true;
       bat.exists = true;
       bat.visible = true;
@@ -261,11 +260,10 @@ var enemies = {
       bat.body.collideWorldBounds = false;
       var directions = ['left', 'right']
       var direction = directions[Math.floor(Math.random() *2)]
-      console.log(direction)
       if(direction == 'left'){
         bat.body.velocity.x = rightSpeeds[Math.floor(Math.random()* rightSpeeds.length)]
         bat.body.y = selectedY
-        bat.body.x = 810;
+        bat.body.x = 870;
         batRight = false;
         batLeft = true;
       }
@@ -291,6 +289,7 @@ var enemies = {
         rat.body.collideWorldBounds = false;
         var directions = ['left', 'right']
         var direction = directions[Math.round(Math.random())]
+        // Rats from the left are TOO DIFFICULT!
         direction = "right"
         if(direction == 'left'){
           rat.body.velocity.x = 40
@@ -299,7 +298,7 @@ var enemies = {
           ratLeft = true;
         }
         else{
-          rat.body.velocity.x = -40
+          rat.body.velocity.x = rightSpeeds[Math.floor(Math.random()* rightSpeeds.length)]
           rat.body.x = -19;
           ratLeft = false;
           ratRight = true;
@@ -621,7 +620,7 @@ function grab(){
   sounds.eatPlayer2()
   player2.kill()
   //add player2 dead sprite to rat x location.
-  game.time.events.add(1000, function(){
+  game.time.events.add(2000, function(){
     trampDude.lives = 0
   })
 }
@@ -640,12 +639,12 @@ function checkBounds(player1){
 function gameOver(){
   if(trampDude.lives == 0){
     intro_pic = game.add.sprite(200, 300, 'end_image.png');
+    flapping_sound.stop()
     sounds.die()
     game.state.start('game_over');
     bat.kill()
     rat.kill()
     trampDude.lives = 3;
-    flapping_sound.stop()
     music.stop()
     if(trampDude.score > topScore){
       topScore = trampDude.score
