@@ -419,11 +419,7 @@ var create = function() {
     game.physics.enable(rat, Phaser.Physics.ARCADE)
 
     //player1 collision
-<<<<<<< HEAD
-    player1.body.bounce.y = 0.3;
-=======
     player1.body.bounce.y = 0.5;
->>>>>>> create_rat
     player1.body.collideWorldBounds = true;
     shield.body.collideWorldBounds = true;
     player2.body.collideWorldBounds = true;
