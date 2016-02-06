@@ -21,8 +21,29 @@ var menuState = {
     nameLabel.anchor.setTo(0.5,0.5)
 
     bouncer_sound.play()
-
-    var displayTopScore = game.add.text(100, 246,
+    var instructStyle = { font: "22px Arial",fill:'#ffffff',stroke:'#000000', strokeThickness:5, align:'left'};
+    var displayInstructions = game.add.text(495, 140,
+                                   '|X|X|X|X| Controls |X|X|X|X|',
+                                   {font: '32px Arial', fill: '#ffffff',stroke:'#000000', strokeThickness:4 });
+    var displayInstructions = game.add.text(495, 160,
+                                   '-------------------------------------',
+                                   {font: '32px Arial', fill: '#ffffff',stroke:'#000000', strokeThickness:4 });
+    var player1Control = game.add.text(500, 190,
+                                   'Player 1 (Guy Jumping On Trampoline)',
+                                   instructStyle);
+    var player1Control2 = game.add.text(530, 240,
+                                   '- Left Arrow Key to Flip Forward\n' +
+                                   '- Right Arrow Key to Flip Backwards',
+                                   instructStyle);
+    var player2Control = game.add.text(500, 330,
+                                   'Player 2 (Alien Dragging The Trampoline)',
+                                   instructStyle);
+    var player2Control2 = game.add.text(530, 380,
+                                   '- W Key to Jump\n' +
+                                   '- A Key to Move Left\n' +
+                                   '- D Key to Move Right',
+                                   instructStyle);
+    var displayTopScore = game.add.text(100, 156,
                                    '- - Top Score: ' + topScore,
                                    {font: '42px Arial', fill: '#ffffff',stroke:'#000000', strokeThickness:4 });
     var introStyle = { font: "52px Arial",fill:'#ffffff',stroke:'#000000', strokeThickness:5, align:'left'};
