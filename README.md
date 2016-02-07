@@ -36,7 +36,7 @@ Kylebert wants to Practice his flip routine and commands squirt the alien to dra
 
 ## Motivation
 
-This is my attempt at learning Phaser. My goal is to sculpt this wacky indie adventure into an HTML5 classic smartphone and tablet game.
+This is my attempt at learning Phaser. My goal is to sculpt this wacky indie adventure into a classic arcade style game. My hope is that others will play the game, become interested in learning Phaser, and support its growing community.
 
 ## Installation
 
