@@ -8,7 +8,7 @@ var game = new Phaser.Game(950, 800, Phaser.CANVAS, 'phaser-example',
 */
 //---- Global Variables
 var batDead = false;
-var batLeft = false;
+var batLeft = true;
 var batRight = false;
 var ratDead = false;
 var ratLeft = false;
@@ -16,7 +16,7 @@ var ratRight = false;
 var facing = 'left';
 var jumpTimer = 0;
 var topScore = 0;
-var bat, rat, player1, player2,
+var batGroup, bat, rat, player1, player2,
 cursors,jumpButton,bg,
 balls, shield, scoreText,
 livesText, flipText, flip2Text,
@@ -244,6 +244,11 @@ var trampDude = {
 }
 
 var enemies = {
+  generateBats: function(){
+    for(var i=0; i < 12;i++){
+      batGroup.create(360 + Math.random() * 200, 120 * Math.random * 200, 'batties')
+    }
+  },
   generateBat: function(){
     if(Math.floor(Math.random()*2) && bat.alive !== true){
       sounds.bat()
@@ -305,10 +310,10 @@ var enemies = {
         }
     }
   },
-  collectBat: function(){
+  collectBat: function(a,b){
     sounds.pickupBat()
-    player2.body.velocity.y = -150
-    bat.kill()
+    player2.body.velocity.y = -10
+    b.kill()
     batDead = false;
     trampDude.score += 50;
     scoreText.text = "Score: " + String(trampDude.score);
@@ -402,6 +407,10 @@ var create = function() {
     flip2Text = game.add.text(4,180, String(trampDude.flipsNeeded[1]) , style)
 
     //userMessage = game.add.text(600,65, 'Start', userText)
+    batGroup = game.add.group()
+    for(var i=0; i < 50;i++){
+      batGroup.create(game.world.randomX,game.world.randomY, 'bats',0)
+    }
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -447,6 +456,14 @@ var create = function() {
     bat.animations.add('left', [6,5,4],10, true);
     bat.animations.add('dead', [2], true);
 
+
+    // Bat Group
+    //var frameNames = Phaser.Animation.generateFrameNames('octopus', 0, 24, '', 4);
+    batGroup.callAll('animations.add', 'animations', 'right',[1,2,3],10, true)
+    batGroup.callAll('animations.add', 'animations', 'left',[6,5,4],10, true)
+    batGroup.callAll('animations.add', 'animations', 'dead',[2], true)
+    //batGroup.setAll('body.velocity.x', 40)
+
      // Rat Enemy Animations
      rat.animations.add('right', [0,1,2,3,4], 10, true)
      rat.animations.add('left', [5,6,7,8,9], 10, true)
@@ -478,6 +495,8 @@ var create = function() {
     bg.body.allowGravity = false;
     bat.body.allowGravity = false;
     rat.body.allowGravity = false;
+    batGroup.forEach(function(bat){bat.body.allowGravity = false})
+
 }
 
 //Core Game Logic Gets Looped Here
@@ -505,6 +524,12 @@ var update = function() {
     game.physics.arcade.collide(player1, bat, null, stun, this)
     game.physics.arcade.collide(shield, bat, null, enemies.collectBat, this)
     game.physics.arcade.collide(rat, player2, grab)
+    batGroup.forEach(function(bat){
+      game.physics.arcade.collide(bat, player1, stun)
+    })
+    batGroup.forEach(function(bat){
+      game.physics.arcade.collide(shield, bat, enemies.collectBat)
+    })
     // - - -Collision Logic End
     shield.body.velocity.x = 0
     player2.body.velocity.x = 0;
@@ -556,15 +581,23 @@ var update = function() {
     checkBounds(player1)
     //BAT MOVEMENT HERE
     if(batDead){
+      batGroup.callAll('play','dead')
       bat.animations.play('dead')
       flapping_sound.stop()
     }
     else if(batLeft){
+      batGroup.forEach(function(bat){
+          bat.body.velocity.x = -40
+      })
+      batGroup.forEach(function(bat){
+          bat.animations.play('left')
+      })
       bat.animations.play('left')
       //bat.body.velocity.x = -40;
       sounds.generateFlapping()
     }
     else if(batRight){
+      batGroup.callAll('play','right')
       bat.animations.play('right')
       //bat.body.velocity.x = 40;
       sounds.generateFlapping()
@@ -602,19 +635,22 @@ function reflect(a, player1){
       player1.body.velocity.x = 0;
       trampDude.checkLanding(trampDude.getRotation())
       player1.body.velocity.x = shield.body.velocity.x * 1.5 ;
-      enemies.generateBat()
+      //enemies.generateBat()
       return false;
     }
 }
 function stun(a, bat){
-  sounds.stunBat()
-  bat.body.allowGravity = true;
   batDead = true;
-  bat.body.velocity.y = -220;
-  bat.body.velocity.x += 20;
-  bat.body.collideWorldBounds = true;
-  game.time.events.add(400, function(){ bat.body.velocity.y = 0})
-  if(bat.body.x > 870){bat.body.y = 0}
+  sounds.stunBat()
+  a.body.allowGravity = true;
+  player1.body.velocity.y += 1
+  a.animations.play('dead')
+  a.body.velocity.x += 10;
+  a.body.velocity.y -= 10;
+  a.body.rotation +=4
+  a.body.collideWorldBounds = true;
+  game.time.events.add(400, function(){ a.body.velocity.x = 0})
+  if(bat.body.x > 870){a.body.y = 0}
   //game.physics.arcade.collide(player1, bat, null, reflect, this)
 }
 
