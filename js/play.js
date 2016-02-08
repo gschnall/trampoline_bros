@@ -8,7 +8,7 @@ var game = new Phaser.Game(950, 800, Phaser.CANVAS, 'phaser-example',
 */
 //---- Global Variables
 var batDead = false;
-var batLeft = true;
+var batLeft = false;
 var batRight = false;
 var ratDead = false;
 var ratLeft = false;
@@ -16,7 +16,8 @@ var ratRight = false;
 var facing = 'left';
 var jumpTimer = 0;
 var topScore = 0;
-var batGroup, bat, rat, player1, player2,
+var batCave, batGroup, bat,
+rat, player1, player2,
 cursors,jumpButton,bg,
 balls, shield, scoreText,
 livesText, flipText, flip2Text,
@@ -244,9 +245,40 @@ var trampDude = {
 }
 
 var enemies = {
+  waveNumb: 0,
+  wave: false,
+  goingLeft: true,
+  batDivider: 5, //Higher #, Means Less Bats
+  generateBatGroup: function(){
+    for(var i=0; i < 200;i++){
+      batGroup.create(game.rnd.integerInRange(600,940),game.rnd.integerInRange(300,400), 'bats',0)
+    }
+    batGroup.forEach(function(bat){
+      bat.kill()
+    });
+  },
   generateBats: function(){
-    for(var i=0; i < 12;i++){
-      batGroup.create(360 + Math.random() * 200, 120 * Math.random * 200, 'batties')
+    var multi = 0
+    if(this.wave == false){
+      batGroup.forEach(function(bat){
+        if(multi % enemies.batDivider == 0){
+          bat.animations.play('left')
+          bat.alive = true;
+          bat.exists = true;
+          bat.visible = true;
+          bat.body.velocity.x = -80
+          bat.body.allowGravity = false;
+          bat.body.x = game.rnd.integerInRange(800,1240)
+          bat.body.y = game.rnd.integerInRange(300,400)
+        }
+        multi+=1
+      });
+      this.wave = true;
+    }
+  },
+  checkSurvivors: function(){
+    if(batGroup.length <= 0){
+      this.wave = false
     }
   },
   generateBat: function(){
@@ -318,7 +350,7 @@ var enemies = {
     trampDude.score += 50;
     scoreText.text = "Score: " + String(trampDude.score);
     trampDude.insertAnyText('+50', player2.body.x, player2.body.y, 'rgb(249, 207, 61)')
-    enemies.generateRat()
+    //enemies.generateRat()
   }
 }
 
@@ -398,7 +430,6 @@ var create = function() {
     scoreText = game.add.text(4,15, "Score: " + String(trampDude.score), green)
     livesText = game.add.text(4,55, "Lives: " + String(trampDude.lives), orange)
 
-
     shield = game.add.sprite(360, 720, 'paddle');
     player2 = game.add.sprite(450, 720, 'alien')
 
@@ -408,9 +439,8 @@ var create = function() {
 
     //userMessage = game.add.text(600,65, 'Start', userText)
     batGroup = game.add.group()
-    for(var i=0; i < 50;i++){
-      batGroup.create(game.world.randomX,game.world.randomY, 'bats',0)
-    }
+    batCave = game.add.group()
+    enemies.generateBatGroup()
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -505,6 +535,7 @@ var update = function() {
     // Check to see if player has lost game
     gameOver()
     // GENERATE ROTATION ARRAY
+    enemies.checkSurvivors()
     currentAngle = trampDude.getRotation();
     if(currentAngle > 60 || currentAngle < -60){
       trampDude.createRotationList()
@@ -581,7 +612,7 @@ var update = function() {
     checkBounds(player1)
     //BAT MOVEMENT HERE
     if(batDead){
-      batGroup.callAll('play','dead')
+      //batGroup.callAll('play','dead')
       bat.animations.play('dead')
       flapping_sound.stop()
     }
@@ -635,21 +666,30 @@ function reflect(a, player1){
       player1.body.velocity.x = 0;
       trampDude.checkLanding(trampDude.getRotation())
       player1.body.velocity.x = shield.body.velocity.x * 1.5 ;
-      //enemies.generateBat()
+      enemies.generateBats()
       return false;
     }
 }
 function stun(a, bat){
-  batDead = true;
+  //batDead = true;
   sounds.stunBat()
   a.body.allowGravity = true;
-  player1.body.velocity.y += 1
   a.animations.play('dead')
-  a.body.velocity.x += 10;
-  a.body.velocity.y -= 10;
-  a.body.rotation +=4
+  if(player1.body.y < a.body.y){
+    a.body.velocity.x += 37;
+    a.body.velocity.y += 96;
+    player1.body.velocity.y -= 30
+    a.body.rotation += 5
+  }
+  else if(enemies.goingLeft){
+    a.body.velocity.x += 60;
+    a.body.velocity.y -= 186;
+    player1.body.velocity.y += 2
+  }
   a.body.collideWorldBounds = true;
-  game.time.events.add(400, function(){ a.body.velocity.x = 0})
+  game.time.events.add(1900, function(){
+    a.body.velocity.x = 0
+  })
   if(bat.body.x > 870){a.body.y = 0}
   //game.physics.arcade.collide(player1, bat, null, reflect, this)
 }
@@ -683,6 +723,7 @@ function gameOver(){
     game.state.start('game_over');
     bat.kill()
     rat.kill()
+    batDead = false;
     trampDude.lives = 3;
     music.stop()
     // FLIPS SET HERE FOR DEMO PURPOSES
