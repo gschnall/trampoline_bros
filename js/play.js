@@ -1,12 +1,12 @@
-/*
-var game = new Phaser.Game(950, 800, Phaser.CANVAS, 'phaser-example',
-  { preload: preload,
-    create: create,
-    update: update,
-    render: render
-  });
-*/
 //---- Global Variables
+
+//1. Fix xVelocity landing:
+  //-Add turns to flipMultiplier
+  //-Add var that represents current yVelocity 
+  //-If good or perfect change current yVelocityBounus
+  //-flipMultiplier -1 on each Landing
+  //-have sprite glow or have cool text like X2/X4/X5
+//-CLEAN UP VARIABLES
 var batDead = false;
 var batLeft = false;
 var batRight = false;
@@ -22,9 +22,9 @@ cursors,jumpButton,bg,
 balls, shield, scoreText,
 livesText, flipText, flip2Text,
 userMesssage, currentAngle,
-intro_pic,
+intro_pic, multiplierText
 // Audio Element Variables
-poor_landing_sound, bat_sound,
+var poor_landing_sound, bat_sound,
 bounce_sound, good_landing_sound,
 perfect_landing_sound, pickup_bat_sound,
 rat_sound,stun_bat_sound, wrong_flip_sound,
@@ -58,15 +58,27 @@ sounds = {
   flapping: function(){flapping_sound.play('flapping_sound')},
 }
 
+textStyle = {
+  plain: { font: "32px Arial",fill:'#ffffff',stroke:'#000000', strokeThickness:5, align:'left'},
+  highlighted: { font: '32px Arial',fill:'#ffff00',stroke:'#000000', strokeThickness:5, align:'left'},
+  green: { font: "32px Arial",fill:'rgb(91, 230, 84)',stroke:'#000000', strokeThickness:4, align:'left'},
+  orange: { font: "32px Arial",fill:'rgb(240, 98, 46)',stroke:'#000000', strokeThickness:4, align:'left'},
+  purple: { font: "32px Arial",fill:'rgb(222, 222, 222)', stroke:'#000000', strokeThickness:6, align:'left'},
+  blue: { font: "32px Arial",fill:'rgb(19, 55, 216)', stroke:'#000000', strokeThickness:6, align:'left'},
+  lightBlue: { font: "32px Arial",fill:'rgb(19, 176, 216)', stroke:'#000000', strokeThickness:6, align:'left'},
+  turquoise: { font: "32px Arial",fill:'rgb(19, 216, 190)', stroke:'#000000', strokeThickness:6, align:'left'},
+}
+
 //Player1 object
 var trampDude = {
   difficulty: 1,
-  negativeAngle: -31,
+  negativeAngle: -43, //Adjust neg and pos so the person lands easier
   positiveAngle: 31,
   flipsNeeded: ["1 Back Flip","1 Front Flip"],
   lives: 3,
   rotationArray: [],
-  velocityY: 0,
+  flipBonusTurns:0,
+  yVelocityBonus:0,
   getRotation: function(){
     return Math.round(player1.body.rotation);
   },
@@ -170,23 +182,37 @@ var trampDude = {
       trampDude.addToFlipsArr()
       trampDude.resetArr()
       if(pr <= 10 && pr >= -10){
-        //insert acceleration
         trampDude.adjustScore(100);
         sounds.perfectLanding()
         trampDude.displayText(trampDude.perfectString, 'rgb(21, 232, 29)')
-        player1.body.velocity.y -= 135
+        player1.body.velocity.y = -570
+        //Current flip bonus - new addition
+        trampDude.flipBonusTurns += 2 
+        multiplierText.text = 'Bounce: x2';
+        multiplierText.fill = 'rgb(19, 216, 190)'
+        trampDude.yVelocityBonus = -570 
+        trampDude.difficulty = 3
       }
       else if(pr <= 20 && pr >= -20){
-        //insert acceleration
         trampDude.adjustScore(50);
         sounds.goodLanding()
         trampDude.displayText(trampDude.goodString)
-        player1.body.velocity.y -= 100
+        player1.body.velocity.y = -520
+        //Current flip bonus - new addition
+        trampDude.flipBonusTurns += 2 
+        multiplierText.text = 'Bounce: x1.6';
+        multiplierText.fill = 'rgb(0, 110, 255)'
+        trampDude.yVelocityBonus = -520
+        trampDude.difficulty = 2
       }
       else{
         trampDude.adjustScore(20);
         trampDude.displayText(trampDude.badString, 'rgb(255, 225, 24)')
-        player1.body.velocity.y -= 30
+        player1.body.velocity.y = -425
+        trampDude.flipBonusTurns += 2 
+        multiplierText.text = 'Bounce: x1.2';
+        multiplierText.fill = 'rgb(0, 43, 255)'
+        trampDude.yVelocityBonus = -455
         sounds.poorLanding()
       }
     }
@@ -212,7 +238,7 @@ var trampDude = {
     var forwardArr3 = '-90,180,90,-90,180,90,-90,180,90,'
     var backwardsArr = '90,180,-90'
     var backwardsArr2 = '90,180,-90,90,180,-90'
-    var backwardsArr3 = '90,180,-90,90,180,-90,,90,180,-90'
+    var backwardsArr3 = '90,180,-90,90,180,-90,90,180,-90'
     var arr = trampDude.rotationArray
     if(arr.length < 3){return 'stayed'}
     else if(flipsNeeded == 1){
@@ -386,9 +412,10 @@ var create = function() {
     //Background Spirit - Has No Gravity
     bg = game.add.sprite(1, 0, 'background');
     //---- Sound Track
+    //UNCOMMENT LINES BELOW TO TURN ON SAMPLE SOUND TRACK
     music = game.add.audio('soundtrack',true)
-    music.play('',0,1,true)
-    music.onLoop.add(sounds.playSoundTrack)
+    //music.play('',0,1,true)
+    //music.onLoop.add(sounds.playSoundTrack)
     // Setup Audio Sprites ---
     poor_landing_sound = game.add.audio('poor_landing')
     bat_sound = game.add.audio('bat_sound')
@@ -421,21 +448,16 @@ var create = function() {
     flapping_sound.addMarker('flapping_sound',0,2)
     // ______________________
     // Text to Create
-    var style = { font: "32px Arial",fill:'#ffffff',stroke:'#000000', strokeThickness:5, align:'left'};
-    var highlighted = { font: '32px Arial',fill:'#ffff00',stroke:'#000000', strokeThickness:5, align:'left'}
-    var green = { font: "32px Arial",fill:'rgb(91, 230, 84)',stroke:'#000000', strokeThickness:4, align:'left'};
-    var orange = { font: "32px Arial",fill:'rgb(240, 98, 46)',stroke:'#000000', strokeThickness:4, align:'left'};
-    var purple = { font: "32px Arial",fill:'rgb(222, 222, 222)', stroke:'#000000', strokeThickness:6, align:'left'};
 
-    scoreText = game.add.text(4,15, "Score: " + String(trampDude.score), green)
-    livesText = game.add.text(4,55, "Lives: " + String(trampDude.lives), orange)
+    scoreText = game.add.text(4,15, "Score: " + String(trampDude.score), textStyle.green)
+    livesText = game.add.text(4,55, "Lives: " + String(trampDude.lives), textStyle.orange)
 
     shield = game.add.sprite(360, 720, 'paddle');
     player2 = game.add.sprite(450, 720, 'alien')
-
-    flipText = game.add.text(4,95, "Next Flips:",purple)
-    flip1Text = game.add.text(4,135, String(trampDude.flipsNeeded[0]) ,highlighted)
-    flip2Text = game.add.text(4,180, String(trampDude.flipsNeeded[1]) , style)
+    multiplierText = game.add.text(4,95, 'Bounce: x1', textStyle.purple)
+    flipText = game.add.text(4,135, "Next Flips:",textStyle.purple)
+    flip1Text = game.add.text(4,180, String(trampDude.flipsNeeded[0]) ,textStyle.highlighted)
+    flip2Text = game.add.text(4,225, String(trampDude.flipsNeeded[1]) , textStyle.plain)
 
     //userMessage = game.add.text(600,65, 'Start', userText)
     batGroup = game.add.group()
@@ -582,7 +604,7 @@ var update = function() {
     }
 
     //Logic for trampoline player 2
-    if (aButton.isDown){
+    if (aButton.isDown && player2.body.x > 85){
         shield.body.velocity.x = -170;
         player2.body.velocity.x = -170;
         player2.animations.play('left')
@@ -590,7 +612,7 @@ var update = function() {
             facing = 'left';
         }
     }
-    else if (dButton.isDown) {
+    else if (dButton.isDown && shield.body.x < 824 ) {
         //player1.body.velocity.x = 50;
         shield.body.velocity.x = 170;
         player2.body.velocity.x = 170;
@@ -660,32 +682,64 @@ function reflect(a, player1){
     if(player1.y > (shield.y +15)){
       return true;
     }
-    else{
+    else if(trampDude.flipBonusTurns > 0){
+      trampDude.flipBonusTurns -= 1 
       sounds.bounce()
-      player1.body.velocity.y = -500 || player1.body.velocity.y
-      player1.body.velocity.x = 0;
+      player1.body.velocity.y = trampDude.yVelocityBonus 
       trampDude.checkLanding(trampDude.getRotation())
-      player1.body.velocity.x = shield.body.velocity.x * 1.5 ;
+      player1.body.velocity.x = shield.body.velocity.x * 1.35 ;
       enemies.generateBats()
+      //Adjust x velocity
+      var px = player1.body.x
+      var sx = shield.body.x
+      if(px - sx > 42 && px-sx < 56){player1.body.velocity.x = 0} 
+      else{
+        player1.body.velocity.x += (-50 + (px - sx)) * 2.8 
+      }
       return false;
     }
+    else{
+      sounds.bounce()
+      // Reset Difficulty
+      trampDude.difficulty = 1
+      multiplierText.text = 'Bounce: x1'
+      multiplierText.fill = 'rgb(222, 222, 222)'
+      if(trampDude.flipsNeeded[0][0] >= 3 || trampDude.flipsNeeded[0][1] >= 3){
+        trampDude.addToFlipsArr()
+        trampDude.addToFlipsArr()
+      }
+      player1.body.velocity.y = -400 || player1.body.velocity.y
+      player1.body.velocity.x = 0;
+      trampDude.checkLanding(trampDude.getRotation())
+      player1.body.velocity.x = shield.body.velocity.x * 1.35 ;
+      enemies.generateBats()
+      //Adjust x velocity
+      var px = player1.body.x
+      var sx = shield.body.x
+      if(px - sx > 42 && px-sx < 55){player1.body.velocity.x = 0} 
+      else{
+        player1.body.velocity.x += (-50 + (px - sx)) * 2.8 
+      }
+      return false;
+    }
+    //Add logic to change x velocity on shield x-location
 }
 function stun(a, bat){
   //batDead = true;
   sounds.stunBat()
   a.body.allowGravity = true;
   a.animations.play('dead')
-  if(player1.body.y < a.body.y){
+  if(player1.body.y < a.body.y){ //Below Bat
     a.body.velocity.x += 37;
     a.body.velocity.y += 96;
     player1.body.velocity.y -= 30
     a.body.rotation += 5
-  }
+  } // Above Bat
   else if(enemies.goingLeft){
     a.body.velocity.x += 60;
     a.body.velocity.y -= 186;
     player1.body.velocity.y += 2
-  }
+  } // Change Velocity x based on goingLeft true or false
   a.body.collideWorldBounds = true;
   game.time.events.add(1900, function(){
     a.body.velocity.x = 0
@@ -728,6 +782,8 @@ function gameOver(){
     music.stop()
     // FLIPS SET HERE FOR DEMO PURPOSES
     trampDude.flipsNeeded = ["1 Front Flip","1 Back Flip"]
+    multiplierText.text = 'Bounce: x1'
+    multiplierText.fill = 'rgb(222, 222, 222)'
     if(trampDude.score > topScore){
       topScore = trampDude.score
     }
