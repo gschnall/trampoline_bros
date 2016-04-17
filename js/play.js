@@ -2,7 +2,7 @@
 
 //1. Fix xVelocity landing:
   //-Add turns to flipMultiplier
-  //-Add var that represents current yVelocity 
+  //-Add var that represents current yVelocity
   //-If good or perfect change current yVelocityBounus
   //-flipMultiplier -1 on each Landing
   //-have sprite glow or have cool text like X2/X4/X5
@@ -187,11 +187,12 @@ var trampDude = {
         trampDude.displayText(trampDude.perfectString, 'rgb(21, 232, 29)')
         player1.body.velocity.y = -570
         //Current flip bonus - new addition
-        trampDude.flipBonusTurns += 2 
+        trampDude.flipBonusTurns += 2
         multiplierText.text = 'Bounce: x2';
         multiplierText.fill = 'rgb(19, 216, 190)'
-        trampDude.yVelocityBonus = -570 
-        trampDude.difficulty = 3
+        multiplierText.stroke = '#003333'
+        trampDude.yVelocityBonus = -570
+        trampDude.difficulty = 2
       }
       else if(pr <= 20 && pr >= -20){
         trampDude.adjustScore(50);
@@ -199,9 +200,10 @@ var trampDude = {
         trampDude.displayText(trampDude.goodString)
         player1.body.velocity.y = -520
         //Current flip bonus - new addition
-        trampDude.flipBonusTurns += 2 
+        trampDude.flipBonusTurns += 2
         multiplierText.text = 'Bounce: x1.6';
         multiplierText.fill = 'rgb(0, 110, 255)'
+        multiplierText.stroke = '#003333'
         trampDude.yVelocityBonus = -520
         trampDude.difficulty = 2
       }
@@ -209,9 +211,10 @@ var trampDude = {
         trampDude.adjustScore(20);
         trampDude.displayText(trampDude.badString, 'rgb(255, 225, 24)')
         player1.body.velocity.y = -425
-        trampDude.flipBonusTurns += 2 
+        trampDude.flipBonusTurns += 2
         multiplierText.text = 'Bounce: x1.2';
-        multiplierText.fill = 'rgb(0, 43, 255)'
+        multiplierText.fill = 'rgb(0, 73, 255)'
+        multiplierText.stroke = '#003333'
         trampDude.yVelocityBonus = -455
         sounds.poorLanding()
       }
@@ -235,7 +238,7 @@ var trampDude = {
     var flipType = trampDude.flipsNeeded[0].split(' ')[1]
     var forwardArr = '-90,180,90'
     var forwardArr2 = '-90,180,90,-90,180,90'
-    var forwardArr3 = '-90,180,90,-90,180,90,-90,180,90,'
+    var forwardArr3 = '-90,180,90,-90,180,90,-90,180,90'
     var backwardsArr = '90,180,-90'
     var backwardsArr2 = '90,180,-90,90,180,-90'
     var backwardsArr3 = '90,180,-90,90,180,-90,90,180,-90'
@@ -258,6 +261,7 @@ var trampDude = {
       }
     }
     else if(flipsNeeded == 3){
+      console.log(String(forwardArr3), String(arr))
       if(flipType == 'Front'){
         return forwardArr3 == String(arr)
       }
@@ -274,7 +278,9 @@ var enemies = {
   waveNumb: 0,
   wave: false,
   goingLeft: true,
-  batDivider: 5, //Higher #, Means Less Bats
+  velocityLeftRange:[-60,-100],
+  velocityRightRange:[60,100],
+  batDivider:5, //Higher #, Means Less Bats
   generateBatGroup: function(){
     for(var i=0; i < 200;i++){
       batGroup.create(game.rnd.integerInRange(600,940),game.rnd.integerInRange(300,400), 'bats',0)
@@ -285,26 +291,40 @@ var enemies = {
   },
   generateBats: function(){
     var multi = 0
-    if(this.wave == false){
+    if(enemies.wave == false){
+      this.waveNumb += 1
       batGroup.forEach(function(bat){
         if(multi % enemies.batDivider == 0){
           bat.animations.play('left')
-          bat.alive = true;
-          bat.exists = true;
-          bat.visible = true;
-          bat.body.velocity.x = -80
+          // bat.alive = true;
+          // bat.exists = true;
+          // bat.visible = true;
           bat.body.allowGravity = false;
-          bat.body.x = game.rnd.integerInRange(800,1240)
-          bat.body.y = game.rnd.integerInRange(300,400)
+          bat.reset(game.rnd.integerInRange(1050,1070),game.rnd.integerInRange(400,500))
+          //bat.body.x = game.rnd.integerInRange(1050,1070)
+          //bat.x = game.rnd.integerInRange(850,870)
+          //bat.body.y = game.rnd.integerInRange(400,500)
+          //bat.y = game.rnd.integerInRange(400,500)
+          bat.body.collideWorldBounds = false;
+          bat.body.velocity.y = 0
+          bat.body.velocity.x = game.rnd.integerInRange(-50, -60)
+          console.log("fart" ,bat.body.x, bat.body.y)
         }
         multi+=1
       });
-      this.wave = true;
+      enemies.wave = true;
     }
   },
   checkSurvivors: function(){
-    if(batGroup.length <= 0){
-      this.wave = false
+    if(enemies.wave == true){
+      var survivors = false
+      batGroup.forEach(function(bat){
+        if(bat.alive){ survivors = true }
+      })
+      if(survivors == false){
+        console.log('no survivors')
+        enemies.wave = false
+      }
     }
   },
   generateBat: function(){
@@ -370,7 +390,11 @@ var enemies = {
   },
   collectBat: function(a,b){
     sounds.pickupBat()
-    player2.body.velocity.y = -10
+    player2.body.velocity.y = -20
+    b.x = 0
+    b.y = 0
+    b.body.velocity.x = 0
+    b.body.velocity.y = 0
     b.kill()
     batDead = false;
     trampDude.score += 50;
@@ -409,6 +433,7 @@ var preload = function(){
 
 // Create all our Stuff
 var create = function() {
+    game.time.events.loop(15000, enemies.generateBats)
     //Background Spirit - Has No Gravity
     bg = game.add.sprite(1, 0, 'background');
     //---- Sound Track
@@ -639,9 +664,7 @@ var update = function() {
       flapping_sound.stop()
     }
     else if(batLeft){
-      batGroup.forEach(function(bat){
-          bat.body.velocity.x = -40
-      })
+      //DELETED BAT.BODY.VELOCITY.X -40
       batGroup.forEach(function(bat){
           bat.animations.play('left')
       })
@@ -667,10 +690,21 @@ var update = function() {
     }
 
     //Check if Bat is out of Bounds
-    if(bat.body.x > 900 || bat.body.x < -10){
-      bat.kill()
-      flapping_sound.stop()
+    if(enemies.wave){
+      //console.log("enemies.wave")
+      batGroup.forEach(function(bat){
+        if(bat.body.x <= -500){
+          bat.kill()
+          //RESET BAT POSITION HERE MAYBE??
+          //CAN YOU KILL A BAT THAT DOESN'T EXIST?
+        }
+      })
     }
+
+    // if(bat.body.x > 900 || bat.body.x < -10){
+    //   bat.kill()
+    //   flapping_sound.stop()
+    // }
     //Check if Rat is out of Bounds
     if(rat.body.x > 900 || rat.body.x < -20){
       rat.kill()
@@ -679,22 +713,22 @@ var update = function() {
 
 // Function to reflect trampDude!****
 function reflect(a, player1){
+    // FIRE OFF BATS HERE
     if(player1.y > (shield.y +15)){
       return true;
     }
     else if(trampDude.flipBonusTurns > 0){
-      trampDude.flipBonusTurns -= 1 
+      trampDude.flipBonusTurns -= 1
       sounds.bounce()
-      player1.body.velocity.y = trampDude.yVelocityBonus 
+      player1.body.velocity.y = trampDude.yVelocityBonus
       trampDude.checkLanding(trampDude.getRotation())
       player1.body.velocity.x = shield.body.velocity.x * 1.35 ;
-      enemies.generateBats()
       //Adjust x velocity
       var px = player1.body.x
       var sx = shield.body.x
-      if(px - sx > 42 && px-sx < 56){player1.body.velocity.x = 0} 
+      if(px - sx > 42 && px-sx < 56){player1.body.velocity.x = 0}
       else{
-        player1.body.velocity.x += (-50 + (px - sx)) * 2.8 
+        player1.body.velocity.x += (-50 + (px - sx)) * 2.8
       }
       return false;
     }
@@ -704,6 +738,7 @@ function reflect(a, player1){
       trampDude.difficulty = 1
       multiplierText.text = 'Bounce: x1'
       multiplierText.fill = 'rgb(222, 222, 222)'
+      multiplierText.stroke = '#000000'
       if(trampDude.flipsNeeded[0][0] >= 3 || trampDude.flipsNeeded[0][1] >= 3){
         trampDude.addToFlipsArr()
         trampDude.addToFlipsArr()
@@ -712,13 +747,12 @@ function reflect(a, player1){
       player1.body.velocity.x = 0;
       trampDude.checkLanding(trampDude.getRotation())
       player1.body.velocity.x = shield.body.velocity.x * 1.35 ;
-      enemies.generateBats()
       //Adjust x velocity
       var px = player1.body.x
       var sx = shield.body.x
-      if(px - sx > 42 && px-sx < 55){player1.body.velocity.x = 0} 
+      if(px - sx > 42 && px-sx < 55){player1.body.velocity.x = 0}
       else{
-        player1.body.velocity.x += (-50 + (px - sx)) * 2.8 
+        player1.body.velocity.x += (-50 + (px - sx)) * 2.8
       }
       return false;
     }
@@ -784,6 +818,7 @@ function gameOver(){
     trampDude.flipsNeeded = ["1 Front Flip","1 Back Flip"]
     multiplierText.text = 'Bounce: x1'
     multiplierText.fill = 'rgb(222, 222, 222)'
+    multiplierText.stroke = '#000000'
     if(trampDude.score > topScore){
       topScore = trampDude.score
     }
