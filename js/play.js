@@ -278,9 +278,15 @@ var enemies = {
   waveNumb: 0,
   wave: false,
   goingLeft: true,
-  velocityLeftRange:[-60,-100],
-  velocityRightRange:[60,100],
-  batDivider:5, //Higher #, Means Less Bats
+  batDivider:15, //Higher #, Means Less Bats
+  velocityMultiplier: 30,
+  adjustDifficulty: function(){
+    if(this.waveNumb < 30){
+      this.waveNumb += 1
+      this.batDivider -= .5;
+      this.velocityMultiplier += 5;
+    }
+  },
   generateBatGroup: function(){
     for(var i=0; i < 200;i++){
       batGroup.create(game.rnd.integerInRange(600,940),game.rnd.integerInRange(300,400), 'bats',0)
@@ -291,23 +297,33 @@ var enemies = {
   },
   generateBats: function(){
     var multi = 0
+    var goingRight = Math.round(Math.random())
+    // SET GLOBAL LEFT AND RIGHT FOR IMPACT PURPOSES
+    enemies.goingLeft = goingRight ? false : true
     if(enemies.wave == false){
-      this.waveNumb += 1
+      enemies.adjustDifficulty()
       batGroup.forEach(function(bat){
         if(multi % enemies.batDivider == 0){
-          bat.animations.play('left')
           // bat.alive = true;
           // bat.exists = true;
           // bat.visible = true;
           bat.body.allowGravity = false;
-          bat.reset(game.rnd.integerInRange(1050,1070),game.rnd.integerInRange(400,500))
+          if(!goingRight){
+            bat.animations.play('left')
+            bat.reset(game.rnd.integerInRange(1150,1270),game.rnd.integerInRange(400,550))
+            bat.body.velocity.x = game.rnd.integerInRange((-1 * enemies.velocityMultiplier), (-1 * enemies.velocityMultiplier)-15)
+          }
+          else{
+            bat.animations.play('right')
+            bat.reset(game.rnd.integerInRange(-100,-200),game.rnd.integerInRange(400,550))
+            bat.body.velocity.x = game.rnd.integerInRange((1 * enemies.velocityMultiplier), (1 * enemies.velocityMultiplier)+15)
+          }
           //bat.body.x = game.rnd.integerInRange(1050,1070)
           //bat.x = game.rnd.integerInRange(850,870)
           //bat.body.y = game.rnd.integerInRange(400,500)
           //bat.y = game.rnd.integerInRange(400,500)
           bat.body.collideWorldBounds = false;
           bat.body.velocity.y = 0
-          bat.body.velocity.x = game.rnd.integerInRange(-50, -60)
           console.log("fart" ,bat.body.x, bat.body.y)
         }
         multi+=1
@@ -691,12 +707,9 @@ var update = function() {
 
     //Check if Bat is out of Bounds
     if(enemies.wave){
-      //console.log("enemies.wave")
       batGroup.forEach(function(bat){
-        if(bat.body.x <= -500){
+        if(bat.body.x <= -500 || bat.body.x > 2000){
           bat.kill()
-          //RESET BAT POSITION HERE MAYBE??
-          //CAN YOU KILL A BAT THAT DOESN'T EXIST?
         }
       })
     }
@@ -778,7 +791,7 @@ function stun(a, bat){
   game.time.events.add(1900, function(){
     a.body.velocity.x = 0
   })
-  if(bat.body.x > 870){a.body.y = 0}
+  //if(bat.body.x > 870){a.body.y = 0}
   //game.physics.arcade.collide(player1, bat, null, reflect, this)
 }
 
