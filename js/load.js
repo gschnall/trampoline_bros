@@ -27,8 +27,9 @@ var loadState = {
     game.load.audio('eat_player2', './audio/eat_player2.mp3')
     game.load.audio('flapping', './audio/flapping.mp3')
     //__________________
-  var loadingLabel = game.add.text(80, 150, 'loading...',
+  var loadingLabel = game.add.text(80, 150, 'Loading Game...',
                                       {font: '30px Courier', fill: '#ffffff'})
+  var loadingChar = game.add.sprite(600, 'alien')
   bouncer_sound.play()
  },
 
