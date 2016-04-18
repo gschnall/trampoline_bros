@@ -8,6 +8,7 @@ var menuState = {
     game.load.audio('start', './audio/select.mp3')
     //UNCOMMENT LINES BELOW TO TURN ON SAMPLE SOUND TRACK
     music = game.add.audio('soundtrack',true)
+    
     music.play('',0,1,true)
     music.onLoop.add(sounds.playSoundTrack)
 

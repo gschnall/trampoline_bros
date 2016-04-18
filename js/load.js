@@ -1,7 +1,7 @@
 var loadState = {
  preload: function() {
-    var bouncer_sound = game.add.audio('bouncer')
     //Loading Text Here
+    var bouncer_sound = game.add.audio('bouncer')
     game.load.image('paddle', './imgs/trampoline.png');
     // LOAD CHARACTER SPRITES:::
     game.load.image('background', './imgs/the_sky2.png');
@@ -29,7 +29,10 @@ var loadState = {
     //__________________
   var loadingLabel = game.add.text(80, 150, 'Loading Game...',
                                       {font: '30px Courier', fill: '#ffffff'})
-  var loadingChar = game.add.sprite(600, 'alien')
+  var loadingLabel2 = game.add.text(80, 250, 'Klydebert & Squirt (Trampoline Bros)',
+                                      {font: '30px Courier', fill: '#ffffff'})
+  var loadingLabel2 = game.add.text(200, 320, "\u0020\u0020\u0020" + "mm\n/^(\u0020\u0020)^\\" + '\n' + "\\,(..),/" + "\n\u0020\u0020V~~V",
+                                      {font: '30px Courier', fill: '#ffffff'})
   bouncer_sound.play()
  },
 
