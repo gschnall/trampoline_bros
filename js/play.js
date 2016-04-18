@@ -281,6 +281,15 @@ var enemies = {
   velocityMultiplier: 20,
   heightMultiplier: 560,
   ratVelocity: -60,
+  reset: function(){
+    enemies.waveNumb = 0
+    enemies.wave = false
+    enemies.goingLeft = true
+    enemies.batDivider = 15
+    enemies.velocityMultiplier = 20
+    enemies.heightMultiplier = 560
+    enemies.ratVelocity = -60
+  },
   adjustDifficulty: function(){
     if(this.waveNumb < 14){
       this.waveNumb += 1
@@ -419,13 +428,14 @@ var enemies = {
   },
   eatBat: function(a,b){
     sounds.eatPlayer2()
-    a.body.y = 780;
     b.x = 0
     b.y = 0
     b.body.velocity.x = 0
     b.body.velocity.y = 0
     b.kill()
     batDead = false;
+    a.body.y = 780;
+    a.body.velocity.y = 0;
   }
 }
 
@@ -834,10 +844,8 @@ function gameOver(){
     flapping_sound.stop()
     sounds.die()
     game.state.start('game_over');
-    enemies.batDivider = 15;
-    enemies.velocityMultiplier = 30;
-    enemies.heightMultiplier = 400;
-    enemies.waveNumb = 0;
+    // RESET ENEMY VARIABLES
+    enemies.reset()
     bat.kill()
     rat.kill()
     batDead = false;
