@@ -271,7 +271,6 @@ var trampDude = {
     }
   },
 // End trampDude Object
-
 }
 
 var enemies = {
@@ -279,12 +278,14 @@ var enemies = {
   wave: false,
   goingLeft: true,
   batDivider:15, //Higher #, Means Less Bats
-  velocityMultiplier: 30,
+  velocityMultiplier: 20,
+  heightMultiplier: 560,
   adjustDifficulty: function(){
-    if(this.waveNumb < 30){
+    if(this.waveNumb < 14){
       this.waveNumb += 1
-      this.batDivider -= .5;
-      this.velocityMultiplier += 5;
+      this.batDivider -= 1;
+      this.velocityMultiplier += 6;
+      this.heightMultiplier -= 20;
     }
   },
   generateBatGroup: function(){
@@ -310,12 +311,12 @@ var enemies = {
           bat.body.allowGravity = false;
           if(!goingRight){
             bat.animations.play('left')
-            bat.reset(game.rnd.integerInRange(1150,1270),game.rnd.integerInRange(400,550))
+            bat.reset(game.rnd.integerInRange(1150,1270),game.rnd.integerInRange(1*enemies.heightMultiplier,(1*enemies.heightMultiplier) + 100))
             bat.body.velocity.x = game.rnd.integerInRange((-1 * enemies.velocityMultiplier), (-1 * enemies.velocityMultiplier)-15)
           }
           else{
             bat.animations.play('right')
-            bat.reset(game.rnd.integerInRange(-100,-200),game.rnd.integerInRange(400,550))
+            bat.reset(game.rnd.integerInRange(-100,-200),game.rnd.integerInRange(1*enemies.heightMultiplier,(1*enemies.heightMultiplier) + 100))
             bat.body.velocity.x = game.rnd.integerInRange((1 * enemies.velocityMultiplier), (1 * enemies.velocityMultiplier)+15)
           }
           //bat.body.x = game.rnd.integerInRange(1050,1070)
@@ -324,7 +325,6 @@ var enemies = {
           //bat.y = game.rnd.integerInRange(400,500)
           bat.body.collideWorldBounds = false;
           bat.body.velocity.y = 0
-          console.log("fart" ,bat.body.x, bat.body.y)
         }
         multi+=1
       });
@@ -340,6 +340,7 @@ var enemies = {
       if(survivors == false){
         console.log('no survivors')
         enemies.wave = false
+        enemies.generateRat()
       }
     }
   },
@@ -376,14 +377,14 @@ var enemies = {
     }
   },
   generateRat: function(){
-    if(Math.floor(Math.random()*2) && rat.alive !== true){
+    if(Math.round(Math.random()) && rat.alive !== true){
         //sounds.rat()
         trampDude.insertAnyText('RAT!!!', player1.body.x, player1.body.y, 'rgb(237, 32, 26)', 'fadeText' )
         rat.alive = true;
         rat.exists = true;
         rat.visible = true;
         var leftSpeeds = [190, 210, 230, 260, 280, 300, 325, 400, 500, 540, 580, 600, 640, 700, 725, 745, 800, 825]
-        var rightSpeeds = [-190, -210, -230, -260, -280, -300, -325, -400, -500, -540, -580, -600, -640, -700, -725]
+        var rightSpeeds = [-190, -210, -230, -260, -280, -300, -325, -400, -500, -540, -580, -600, -640, -700, -725, -740, -760, -800, -810, -825, -835, -860]
         //var batSpeed = speeds[Math.floor(Math.random()* speeds.length)]
         rat.body.collideWorldBounds = false;
         var directions = ['left', 'right']
@@ -822,6 +823,10 @@ function gameOver(){
     flapping_sound.stop()
     sounds.die()
     game.state.start('game_over');
+    enemies.batDivider = 15;
+    enemies.velocityMultiplier = 30;
+    enemies.heightMultiplier = 400;
+    enemies.waveNumb = 0;
     bat.kill()
     rat.kill()
     batDead = false;
