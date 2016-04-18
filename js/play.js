@@ -280,6 +280,7 @@ var enemies = {
   batDivider:15, //Higher #, Means Less Bats
   velocityMultiplier: 20,
   heightMultiplier: 560,
+  ratVelocity: -60,
   adjustDifficulty: function(){
     if(this.waveNumb < 14){
       this.waveNumb += 1
@@ -376,14 +377,13 @@ var enemies = {
     }
   },
   generateRat: function(){
-    if(Math.round(Math.random()) && rat.alive !== true){
+    if(Math.round(Math.random()*4) == 1 && rat.alive !== true){
         //sounds.rat()
         trampDude.insertAnyText('RAT!!!', player1.body.x, player1.body.y, 'rgb(237, 32, 26)', 'fadeText' )
         rat.alive = true;
         rat.exists = true;
         rat.visible = true;
-        var leftSpeeds = [190, 210, 230, 260, 280, 300, 325, 400, 500, 540, 580, 600, 640, 700, 725, 745, 800, 825]
-        var rightSpeeds = [-190, -210, -230, -260, -280, -300, -325, -400, -500, -540, -580, -600, -640, -700, -725, -740, -760, -800, -810, -825, -835, -860]
+        var rightSpeeds = [-40, -56, -60, -70, -80, -84, -90, -95, -100, -108, -115, -120, -130, -135, -140, -150, -160, -170, -180, -190, -210, -230, -240]
         //var batSpeed = speeds[Math.floor(Math.random()* speeds.length)]
         rat.body.collideWorldBounds = false;
         var directions = ['left', 'right']
@@ -397,8 +397,8 @@ var enemies = {
           ratLeft = true;
         }
         else{
-          rat.body.velocity.x = rightSpeeds[Math.floor(Math.random()* rightSpeeds.length)]
-          rat.body.x = -19;
+          enemies.ratVelocity = rightSpeeds[Math.floor(Math.random()* rightSpeeds.length)]
+          rat.body.x = -92;
           ratLeft = false;
           ratRight = true;
         }
@@ -419,7 +419,7 @@ var enemies = {
   },
   eatBat: function(a,b){
     sounds.eatPlayer2()
-    a.body.y -= .5
+    a.body.y = 780;
     b.x = 0
     b.y = 0
     b.body.velocity.x = 0
@@ -459,15 +459,14 @@ var preload = function(){
 // Create all our Stuff
 var create = function() {
     game.time.events.loop(15000, enemies.generateBats)
-    //game.time.events.loop(18000, enemies.generateRat)
 
     //Background Spirit - Has No Gravity
     bg = game.add.sprite(1, 0, 'background');
     //---- Sound Track
     //UNCOMMENT LINES BELOW TO TURN ON SAMPLE SOUND TRACK
     music = game.add.audio('soundtrack',true)
-    //music.play('',0,1,true)
-    //music.onLoop.add(sounds.playSoundTrack)
+    music.play('',0,1,true)
+    music.onLoop.add(sounds.playSoundTrack)
     // Setup Audio Sprites ---
     poor_landing_sound = game.add.audio('poor_landing')
     bat_sound = game.add.audio('bat_sound')
@@ -527,7 +526,7 @@ var create = function() {
     //BAT STARTS HIDDEN
     bat = game.add.sprite(-35,400,'bats');
     //RAT STARTS HIDDEN
-    rat = game.add.sprite(-35, 780, 'rats');
+    rat = game.add.sprite(-101, 780, 'rats');
     //game.time.events.loop(150, fire, this);
 
     game.physics.enable(player1, Phaser.Physics.ARCADE);
@@ -562,7 +561,6 @@ var create = function() {
 
 
     // Bat Group
-    //var frameNames = Phaser.Animation.generateFrameNames('octopus', 0, 24, '', 4);
     batGroup.callAll('animations.add', 'animations', 'right',[1,2,3],10, true)
     batGroup.callAll('animations.add', 'animations', 'left',[6,5,4],10, true)
     batGroup.callAll('animations.add', 'animations', 'dead',[2], true)
@@ -710,11 +708,11 @@ var update = function() {
     //RAT MOVEMENT HERE
     if(ratLeft){
       rat.animations.play('right')
-      rat.body.velocity.x = -60;
+      rat.body.velocity.x = enemies.ratVelocity;
     }
     else if(ratRight){
       rat.animations.play('left')
-      rat.body.velocity.x = 60;
+      rat.body.velocity.x = enemies.ratVelocity * -1;
     }
 
     //Check if Bat is out of Bounds
@@ -731,7 +729,7 @@ var update = function() {
     //   flapping_sound.stop()
     // }
     //Check if Rat is out of Bounds
-    if(rat.body.x > 900 || rat.body.x < -20){
+    if(rat.body.x > 900 || rat.body.x < -100){
       rat.kill()
     }
 }
@@ -811,7 +809,7 @@ function stun(a, bat){
 //Rat Grabs Player2
 function grab(){
   sounds.eatPlayer2()
-  rat.body.y -= .5 
+  rat.body.y -= .5
   player2.kill()
   //add player2 dead sprite to rat x location.
   game.time.events.add(2000, function(){
