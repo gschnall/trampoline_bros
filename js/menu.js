@@ -6,11 +6,14 @@ var menuState = {
     game.load.image('end_image', './imgs/dead_player1.png')
     game.load.audio('bouncer', './audio/bounce2.mp3')
     game.load.audio('start', './audio/select.mp3')
+    //UNCOMMENT LINES BELOW TO TURN ON SAMPLE SOUND TRACK
+    music = game.add.audio('soundtrack',true)
+    music.play('',0,1,true)
+    music.onLoop.add(sounds.playSoundTrack)
 
   },
   create: function() {
     //Intro sounds
-    var bouncer_sound = game.add.audio('bouncer')
     select_sound = game.add.audio('start')
 
     var bg = game.add.sprite(1, -320, 'background');
@@ -20,7 +23,6 @@ var menuState = {
 
     nameLabel.anchor.setTo(0.5,0.5)
 
-    bouncer_sound.play()
     var instructStyle = { font: "22px Arial",fill:'#ffffff',stroke:'#000000', strokeThickness:5, align:'left'};
     var displayInstructions = game.add.text(495, 140,
                                    '|X|X|X|X| Controls |X|X|X|X|',
