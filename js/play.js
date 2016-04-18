@@ -340,7 +340,6 @@ var enemies = {
       if(survivors == false){
         console.log('no survivors')
         enemies.wave = false
-        enemies.generateRat()
       }
     }
   },
@@ -417,7 +416,16 @@ var enemies = {
     trampDude.score += 50;
     scoreText.text = "Score: " + String(trampDude.score);
     trampDude.insertAnyText('+50', player2.body.x, player2.body.y, 'rgb(249, 207, 61)')
-    //enemies.generateRat()
+  },
+  eatBat: function(a,b){
+    sounds.eatPlayer2()
+    a.body.y -= .5
+    b.x = 0
+    b.y = 0
+    b.body.velocity.x = 0
+    b.body.velocity.y = 0
+    b.kill()
+    batDead = false;
   }
 }
 
@@ -451,6 +459,8 @@ var preload = function(){
 // Create all our Stuff
 var create = function() {
     game.time.events.loop(15000, enemies.generateBats)
+    //game.time.events.loop(18000, enemies.generateRat)
+
     //Background Spirit - Has No Gravity
     bg = game.add.sprite(1, 0, 'background');
     //---- Sound Track
@@ -624,6 +634,7 @@ var update = function() {
     })
     batGroup.forEach(function(bat){
       game.physics.arcade.collide(shield, bat, enemies.collectBat)
+      game.physics.arcade.collide(rat, bat, enemies.eatBat)
     })
     // - - -Collision Logic End
     shield.body.velocity.x = 0
@@ -728,6 +739,7 @@ var update = function() {
 // Function to reflect trampDude!****
 function reflect(a, player1){
     // FIRE OFF BATS HERE
+    enemies.generateRat()
     if(player1.y > (shield.y +15)){
       return true;
     }
@@ -799,6 +811,7 @@ function stun(a, bat){
 //Rat Grabs Player2
 function grab(){
   sounds.eatPlayer2()
+  rat.body.y -= .5 
   player2.kill()
   //add player2 dead sprite to rat x location.
   game.time.events.add(2000, function(){
