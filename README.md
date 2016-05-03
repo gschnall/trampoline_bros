@@ -3,10 +3,6 @@
 ## Link To Game
 <http://gschnall.github.io/trampoline_bros/>
 
-- Trello Link:
-<https://trello.com/b/vRum23TG>
->>>>>>> ff88bc602f4dc66824783612fde2b859adba80b5
-
 ## Synopsis
 
 Trampoline Bros! is meant to be a 2-player co-op game with the optional challenge to play as a single player. The goal of the game is to increase your score by performing flips and collecting bats. Players are given 3 lives. The player looses life if they perform a flip incorrectly, don't land on their feet, miss the trampoline, or get eaten by a rat. The game is project 1 for my web development immersive program.
