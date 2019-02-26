@@ -1,12 +1,15 @@
 //---- Global Variables
 
-//1. Fix xVelocity landing:
+//Fix xVelocity landing:
   //-Add turns to flipMultiplier
   //-Add var that represents current yVelocity
   //-If good or perfect change current yVelocityBounus
   //-flipMultiplier -1 on each Landing
   //-have sprite glow or have cool text like X2/X4/X5
-//-CLEAN UP VARIABLES
+
+
+//-CLEAN UP Global variables 
+//-- Place them in the appropriate objects 
 var batDead = false;
 var batLeft = false;
 var batRight = false;
@@ -79,23 +82,29 @@ var trampDude = {
   rotationArray: [],
   flipBonusTurns:0,
   yVelocityBonus:0,
+
   getRotation: function(){
     return Math.round(player1.body.rotation);
   },
+
   checkPrevRotation: function(angle){
     return angle !== trampDude.rotationArray[trampDude.rotationArray.length-1]
   },
+
   score: 0,
   deadString:'Stay Focused!',
   badString:'Poor Landing',
   goodString:'Great Job!',
   perfectString:'Perfect Dude!',
+
   fadeText: function(myText){
     game.time.events.add(100, function() { game.add.tween(myText).to({alpha: 0}, 1500, Phaser.Easing.Linear.None, true);}, this);
   },
+
   tweenText: function(myText){
     game.time.events.add(100, function() { game.add.tween(myText).to({y: 0}, 1500, Phaser.Easing.Linear.None, true);    game.add.tween(myText).to({alpha: 0}, 1500, Phaser.Easing.Linear.None, true);}, this);
   },
+
   addToFlipsArr: function(){
     // ADDS A NEW RANDOM FLIP TO ARRAY - DELETES FIRST ONE
     var numbOfFlips = Math.round(Math.random()*trampDude.difficulty)+1
@@ -110,9 +119,11 @@ var trampDude = {
     flip1Text.text = trampDude.flipsNeeded[0]
     flip2Text.text = trampDude.flipsNeeded[1]
   },
+
   resetArr:function(){
     trampDude.rotationArray = []
   },
+
   adjustScore: function(points){
       trampDude.score += points;
       scoreText.text = "Score: " + String(trampDude.score);
@@ -121,12 +132,14 @@ var trampDude = {
       userMessage = game.add.text(400,205, "+" + points, userText)
       trampDude.tweenText(userMessage)
   },
+
   displayText: function(text, color){
     color = color || 'rgb(16, 160, 252)'
     userText ={ font: '58px Arial',fill:color,stroke:'rgb(49, 60, 156)', strokeThickness:5, align:'left'};
     userMessage = game.add.text(500,95, text, userText)
     trampDude.tweenText(userMessage)
   },
+
   insertAnyText: function(text, x, y, color, action, strokeColor){
     color = color || '#ffff00'
     action = action || 'tweenText'
@@ -135,15 +148,17 @@ var trampDude = {
     userMessage = game.add.text(x,y, text, userText)
     trampDude[action](userMessage)
   },
+
   restartPlayer1: function(){
     player1.alive = true;
     player1.exists = true;
     player1.visible = true;
     player1.body.rotation = 0;
     player1.body.velocity.x = 0;
-    player1.body.x = shield.body.x
+    player1.body.x = shield.body.x + 45;
     player1.body.y = 500;
   },
+
   killPlayer1: function(){
     sounds.dieLanding()
     sounds.poorLanding()
@@ -152,6 +167,7 @@ var trampDude = {
     trampDude.displayText(trampDude.deadString)
     trampDude.insertAnyText('-1 Life!', 550, 400, 'rgb(230, 25, 25)')
   },
+
   badLanding: function(pr){
     if(((pr < trampDude.positiveAngle) && (pr < trampDude.negativeAngle)) || ((pr > trampDude.positiveAngle) && (pr > trampDude.negativeAngle))){
       sounds.dieLanding()
@@ -164,12 +180,15 @@ var trampDude = {
       return false;
     }
   },
+
   checkLanding: function(pr){
     // pr = player rotation
     //trampDude.badLanding(pr)
-    if(trampDude.badLanding(pr)){ trampDude.resetArr(); return;}
+    //-- Don't worry about what angle the player lands onto the trampoline at
+    //--- Enabling the the line below makes the game much harder
+    // if(trampDude.badLanding(pr)){ trampDude.resetArr(); return;}
     if(trampDude.checkFlipCompletion() == 'stayed'){trampDude.resetArr(); return;}
-    else if(trampDude.checkFlipCompletion() == false){
+    if(trampDude.checkFlipCompletion() == false){
       sounds.poorLanding()
       //trampDude.lives -= 1
       // Take awawy life only in single player option
@@ -177,8 +196,7 @@ var trampDude = {
       trampDude.resetArr()
       sounds.wrongFlip()
       trampDude.insertAnyText('Wrong Flip Dude!', 480, 500, 'rgb(252, 181, 21)')
-    }
-    else{
+    } else{
       trampDude.addToFlipsArr()
       trampDude.resetArr()
       if(pr <= 10 && pr >= -10){
@@ -192,9 +210,8 @@ var trampDude = {
         multiplierText.fill = 'rgb(19, 216, 190)'
         multiplierText.stroke = '#003333'
         trampDude.yVelocityBonus = -570
-        trampDude.difficulty = 2
-      }
-      else if(pr <= 20 && pr >= -20){
+        // trampDude.difficulty = 2 // No more 3 flips - Reduce difficulty
+      } else if(pr <= 20 && pr >= -20){
         trampDude.adjustScore(50);
         sounds.goodLanding()
         trampDude.displayText(trampDude.goodString)
@@ -205,9 +222,8 @@ var trampDude = {
         multiplierText.fill = 'rgb(0, 110, 255)'
         multiplierText.stroke = '#003333'
         trampDude.yVelocityBonus = -520
-        trampDude.difficulty = 2
-      }
-      else{
+        // trampDude.difficulty = 2 // No more 3 flips
+      } else{
         trampDude.adjustScore(20);
         trampDude.displayText(trampDude.badString, 'rgb(255, 225, 24)')
         player1.body.velocity.y = -425
@@ -220,6 +236,7 @@ var trampDude = {
       }
     }
   },
+
   createRotationList: function(){
     // CREATE ROTATION LIST
       currentAngle = trampDude.getRotation();
@@ -233,6 +250,7 @@ var trampDude = {
         trampDude.rotationArray.push(-90)
       }
   },
+
   checkFlipCompletion: function(){
     var flipsNeeded = Number(trampDude.flipsNeeded[0][0])
     var flipType = trampDude.flipsNeeded[0].split(' ')[1]
@@ -269,7 +287,7 @@ var trampDude = {
         return backwardsArr3 == String(arr)
       }
     }
-  },
+  }
 // End trampDude Object
 }
 
@@ -386,7 +404,7 @@ var enemies = {
     }
   },
   generateRat: function(){
-    if(Math.round(Math.random()*4) == 1 && rat.alive !== true){
+    if(Math.round(Math.random()*14) == 1 && rat.alive !== true){
         //sounds.rat()
         trampDude.insertAnyText('RAT!!!', player1.body.x, player1.body.y, 'rgb(237, 32, 26)', 'fadeText' )
         rat.alive = true;
@@ -487,8 +505,8 @@ var create = function() {
     scoreText = game.add.text(4,15, "Score: " + String(trampDude.score), textStyle.green)
     livesText = game.add.text(4,55, "Lives: " + String(trampDude.lives), textStyle.orange)
 
-    shield = game.add.sprite(360, 720, 'paddle');
-    player2 = game.add.sprite(450, 720, 'alien')
+    shield = game.add.sprite(350, 720, 'paddle');
+    player2 = game.add.sprite(436, 720, 'alien')
     multiplierText = game.add.text(4,95, 'Bounce: x1', textStyle.purple)
     flipText = game.add.text(4,135, "Next Flips:",textStyle.purple)
     flip1Text = game.add.text(4,180, String(trampDude.flipsNeeded[0]) ,textStyle.highlighted)
@@ -572,12 +590,12 @@ var create = function() {
     //shield.body.immovable = true
     //player2.body.immovable = true
 
-    //Parameters for Player 1 Rotation
-    player1.body.maxAngular = 400;
-    player1.body.angularDrag = 50;
+    // --- IMPORTANT --- Player 1 Rotation
+    player1.body.maxAngular = 360;
+    player1.body.angularDrag = 110;
     player1.anchor.setTo(0.5,0.5)
 
-    // No Gravity for the bg Image
+    // Bodies with no Gravity
     bg.body.allowGravity = false;
     bat.body.allowGravity = false;
     rat.body.allowGravity = false;
@@ -608,37 +626,32 @@ var update = function() {
 
     // - - -Collision Logic Start
     game.physics.arcade.collide(shield, player1, null, reflect, this);
-    game.physics.arcade.collide(player1, bat, null, stun, this)
+    // game.physics.arcade.collide(player1, bat, null, stun, this)
     game.physics.arcade.collide(shield, bat, null, enemies.collectBat, this)
     game.physics.arcade.collide(rat, player2, grab)
     batGroup.forEach(function(bat){
       game.physics.arcade.collide(bat, player1, stun)
-    })
-    batGroup.forEach(function(bat){
       game.physics.arcade.collide(shield, bat, enemies.collectBat)
       game.physics.arcade.collide(rat, bat, enemies.eatBat)
     })
     // - - -Collision Logic End
     shield.body.velocity.x = 0
     player2.body.velocity.x = 0;
-    // DELETE THIS!
 
-    // Shield speed and player1s speed!!!!!!!!!!!!!
-
-    //Logic for player1 - Our Main Dude!::
+    //Button Logic for player1 - Our Main Dude!::
     if(cursors.left.isDown){
         player1.animations.play('left');
-        player1.body.angularAcceleration -= 200
+        player1.body.angularAcceleration -= 182;
     }
     else if(cursors.right.isDown){
         player1.animations.play('right');
-        player1.body.angularAcceleration += 200
+        player1.body.angularAcceleration += 182;
     }
     else{
         player1.animations.play('idle');
     }
 
-    //Logic for trampoline player 2
+    //Button Logic for trampoline player 2
     if (aButton.isDown && player2.body.x > 85){
         shield.body.velocity.x = -170;
         player2.body.velocity.x = -170;
@@ -721,7 +734,10 @@ var update = function() {
 // Function to reflect trampDude!****
 function reflect(a, player1){
     // FIRE OFF BATS HERE
+    // --- Should disable rats for testing ---
+    //   rats are pesty T_T
     enemies.generateRat()
+
     if(player1.y > (shield.y +15)){
       return true;
     }
@@ -768,11 +784,14 @@ function reflect(a, player1){
 }
 function stun(a, bat){
   //batDead = true;
+  bat.hitCount = bat.hitCount ? bat.hitCount + 1 : 1;
+
   sounds.stunBat()
   a.body.allowGravity = true;
   a.animations.play('dead')
+
   if(player1.body.y < a.body.y){ //Below Bat
-    a.body.velocity.x += 37;
+    a.body.velocity.x += 67;
     a.body.velocity.y += 96;
     player1.body.velocity.y -= 30
     a.body.rotation += 5
@@ -782,12 +801,12 @@ function stun(a, bat){
     a.body.velocity.y -= 186;
     player1.body.velocity.y += 2
   } // Change Velocity x based on goingLeft true or false
+
   a.body.collideWorldBounds = true;
   game.time.events.add(1900, function(){
-    a.body.velocity.x = 0
+    a.body.velocity.x = 0; 
   })
   //if(bat.body.x > 870){a.body.y = 0}
-  //game.physics.arcade.collide(player1, bat, null, reflect, this)
 }
 
 //Rat Grabs Player2
